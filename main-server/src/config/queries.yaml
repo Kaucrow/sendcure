@@ -1,0 +1,3 @@
+counter:
+  testQuery: |
+    SELECT 1 AS value

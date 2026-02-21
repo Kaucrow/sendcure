@@ -1,0 +1,1 @@
+export { default as counterTestRoutes } from './hello.js';
