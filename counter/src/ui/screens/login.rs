@@ -32,8 +32,8 @@ pub fn render(state: &mut screens::login::State, data: &mut AppData, f: &mut Fra
     f.render_widget(title, chunks[0]);
 
     let width = chunks[0].width.max(3) - 3;
-    let name_scroll = state.input.0.visual_scroll(width as usize - "* Username: ".len());
-    let password_scroll = state.input.1.visual_scroll(width as usize - "* Password: ".len());
+    let name_scroll = state.inputs.0.input.visual_scroll(width as usize - "* Username: ".len());
+    let password_scroll = state.inputs.1.input.visual_scroll(width as usize - "* Password: ".len());
     let mut name_style = Style::default();
     let mut password_style = Style::default();
 
@@ -41,7 +41,7 @@ pub fn render(state: &mut screens::login::State, data: &mut AppData, f: &mut Fra
         if field == 0 {
             password_style = password_style.fg(Color::DarkGray);
             f.set_cursor_position((chunks[1].x
-                            + ((state.input.0.visual_cursor()).max(name_scroll) - name_scroll) as u16
+                            + ((state.inputs.0.input.visual_cursor()).max(name_scroll) - name_scroll) as u16
                             + "* Username: ".len() as u16
                             + 1,
                             chunks[1].y + 1,
@@ -49,7 +49,7 @@ pub fn render(state: &mut screens::login::State, data: &mut AppData, f: &mut Fra
         } else {
             name_style = name_style.fg(Color::DarkGray);
             f.set_cursor_position((chunks[2].x
-                            + ((state.input.1.visual_cursor()).max(password_scroll) - password_scroll) as u16
+                            + ((state.inputs.1.input.visual_cursor()).max(password_scroll) - password_scroll) as u16
                             + "* Password: ".len() as u16
                             + 1,
                         chunks[2].y + 1,
@@ -64,7 +64,7 @@ pub fn render(state: &mut screens::login::State, data: &mut AppData, f: &mut Fra
 
     let input = Paragraph::new(Text::from(Line::from(vec![
         Span::styled("* Username: ", Style::default().fg(Color::Yellow)),
-        Span::styled(state.input.0.value(), name_style)
+        Span::styled(state.inputs.0.input.value(), name_style)
     ])))
     .block(name_block)
     .scroll((0, name_scroll as u16));
@@ -78,7 +78,7 @@ pub fn render(state: &mut screens::login::State, data: &mut AppData, f: &mut Fra
 
     let input = Paragraph::new(Text::from(Line::from(vec![
         Span::styled("* Password: ", Style::default().fg(Color::Yellow)),
-        Span::styled(state.input.1.value().to_string(), password_style)
+        Span::styled(state.inputs.1.input.value().to_string(), password_style)
     ])))
     .block(password_block)
     .scroll((0, password_scroll as u16));

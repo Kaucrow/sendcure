@@ -1,21 +1,10 @@
 use crate::{
     prelude::*,
-    model::{TimeoutType, Screen, Popup},
+    model::{TimeoutType, ScreenId, Popup},
 };
 use crossterm::event::{Event as CrosstermEvent};
 
 const SENDER_ERR: &'static str = "could not send terminal event";
-
-#[derive(Debug)]
-pub enum InputBlacklist {
-    None,
-    Money,
-    Alphabetic,
-    AlphanumericNoSpace,
-    Alphanumeric,
-    NoSpace,
-    Numeric,
-}
 
 /// Terminal events
 #[derive(Debug)]
@@ -23,13 +12,14 @@ pub enum Event {
     CrosstermKey(KeyEvent),
 
     Quit,
-    EnterScreen(Screen),
+    EnterScreen(ScreenId),
+
     EnterPopup(Option<Popup>),
     SwitchDiv,
     ToggleDisplayMsg,
     Resize,
     TimeoutTick(TimeoutType),
-    KeyInput(KeyEvent, InputBlacklist),
+    KeyInput(KeyEvent),
     SwitchInput,
     NextInput,
     PrevInput,
@@ -108,39 +98,12 @@ impl EventHandler {
 }
 
 /*
-fn event_act(event: CrosstermEvent, sender: &mpsc::Sender<Event>, app: &App) {
-    match event {
-        CrosstermEvent::Key(key_event) => {
-            if key_event.kind == KeyEventKind::Release { return; }
-
-            {
-                // Events common to all screens.
-                match key_event.code {
-                    KeyCode::Char('c') if key_event.modifiers == KeyModifiers::CONTROL => sender.send(Event::Quit),
-                    //_ if app_lock.display_msg => { sender.send(Event::ToggleDisplayMsg).expect(SENDER_ERR); return; },
-                    _ => Ok(())
-                }.expect(SENDER_ERR);
-            }
-
-            //let curr_screen = app.lock().unwrap().active_screen.clone();
-
-            // Screen-specific events.
-            //match curr_screen {
-                /*Screen::Title => title::event_act(key_event, sender, app),
-                Screen::Settings => settings::event_act(key_event, sender, app),
-                Screen::Login => login::event_act(key_event, sender, app),
-                Screen::Client(_) => client::event_act(key_event, sender, app),
-                Screen::PkgAdmin(_) => pkgadmin::event_act(key_event, sender, app),*/
-            //}
-        },
-        CrosstermEvent::Resize(_, _) => {
-            //let mut app_lock = app.lock().unwrap();
-            /*if !app_lock.timeout.contains_key(&TimeoutType::Resize) {
-                app_lock.add_timeout(1, 250, TimeoutType::Resize);
-                sender.send(Event::Resize).expect(SENDER_ERR);
-            }*/
-        },
-        _ => {}
-    }
-}
+TODO (Maybe):
+    CrosstermEvent::Resize(_, _) => {
+        //let mut app_lock = app.lock().unwrap();
+        /*if !app_lock.timeout.contains_key(&TimeoutType::Resize) {
+            app_lock.add_timeout(1, 250, TimeoutType::Resize);
+            sender.send(Event::Resize).expect(SENDER_ERR);
+        }*/
+    },
 */

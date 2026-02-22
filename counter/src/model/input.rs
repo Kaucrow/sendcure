@@ -9,4 +9,22 @@ pub enum InputMode {
 }
 
 #[derive(Debug, Default)]
-pub struct InputFields(pub Input, pub Input);
+pub struct InputFields(pub InputField, pub InputField);
+
+#[derive(Debug, Default)]
+pub struct InputField {
+    pub input: Input,
+    pub blacklist: InputBlacklist,
+}
+
+#[derive(Debug, Default)]
+pub enum InputBlacklist {
+    #[default]
+    None,
+    Money,
+    Alphabetic,
+    AlphanumericNoSpace,
+    Alphanumeric,
+    NoSpace,
+    Numeric,
+}

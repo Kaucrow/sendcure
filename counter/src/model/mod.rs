@@ -6,6 +6,6 @@ pub mod popups;
 pub mod input;
 
 pub use app::{App, AppData};
-pub use screens::Screen;
+pub use screens::{Screen, ScreenId};
 pub use popups::Popup;
 pub use common::*;

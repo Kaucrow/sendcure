@@ -3,6 +3,7 @@ use crate::{
     update::{
         common,
         screens::*,
+        app
     },
     model::Screen,
 };
@@ -25,16 +26,24 @@ pub async fn update(app: &mut App, event: Event, tx: &Sender<Event>) -> Result<(
             }
         }
 
-        Event::Quit | Event::TimeoutTick(_) | Event::KeyInput(..) |
-        Event::SwitchInput | Event::NextInput | Event::PrevInput | 
-        Event::SwitchAction | Event::SelectAction | Event::EnterScreen(_) |
+        // Enter screen
+        Event::EnterScreen(screen)
+        => app::enter_screen(app, screen).await,
+
+        Event::Quit
+        => common::quit(&mut app.data),
+
+        /*Event::Quit | Event::TimeoutTick(_) | Event::KeyInput(..) |
+        Event::SwitchInput | Event::NextInput | Event::PrevInput |
+        Event::SwitchAction | Event::SelectAction |
         Event::EnterPopup(_) | Event::SwitchDiv | Event::ToggleDisplayMsg |
         Event::UpdatePaymentInfo
         => common::update(app, event).await,
+        */
 
         Event::Resize
         => Ok(()),
 
-        _ => panic!("received event {:?} without assigned update function", event)
+        _ => panic!("Received event {:?} without assigned update function", event)
     }
 }

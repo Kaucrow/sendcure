@@ -23,9 +23,12 @@ pub use ratatui::{
     text::{Span, Text},
     widgets::{Block, BorderType, Borders, Paragraph, Clear},
 };
-pub use anyhow::{Result, anyhow};
+pub use anyhow::{Result, anyhow, bail};
 pub use crossterm::{
     event::{self, DisableMouseCapture, EnableMouseCapture, KeyEvent, KeyCode, KeyModifiers},
     terminal::{self, EnterAlternateScreen, LeaveAlternateScreen},
 };
-pub use tui_input::Input;
+pub use tui_input::{
+    Input,
+    backend::crossterm::EventHandler,
+};

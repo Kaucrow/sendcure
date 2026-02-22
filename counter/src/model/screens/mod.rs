@@ -1,6 +1,11 @@
 pub mod login;
 
 #[derive(Debug)]
+pub enum ScreenId {
+    Login,
+}
+
+#[derive(Debug)]
 pub enum Screen {
     Login(login::State),
 }
