@@ -17,6 +17,5 @@ pub struct App {
 pub struct AppData {
     pub timeout: HashMap<TimeoutType, Timer>,
     pub should_clear_screen: bool,
-    pub active_popup: Option<Popup>,
     pub should_quit: bool,
 }

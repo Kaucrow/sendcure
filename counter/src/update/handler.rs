@@ -21,6 +21,7 @@ pub async fn update(app: &mut App, event: Event, tx: &Sender<Event>) -> Result<(
                 _ => {}
             }
 
+            // Screen-specific key inputs
             match active_screen {
                 Screen::Login(state) => login::update(state, data, key, tx).await,
             }

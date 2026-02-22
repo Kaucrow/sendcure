@@ -1,9 +1,6 @@
-CREATE TABLE employee (
-    employee_cid INT PRIMARY KEY,
-    client_email VARCHAR(100) UNIQUE NOT NULL,
-    client_name VARCHAR(100) NOT NULL,
-    employee_passwd VARCHAR(100) NOT NULL,
-    phone_num VARCHAR(20)
+CREATE TABLE role (
+    role_id SERIAL PRIMARY KEY,
+    role_desc VARCHAR(100)
 );
 
 CREATE TABLE employee_role (
@@ -14,16 +11,19 @@ CREATE TABLE employee_role (
     FOREIGN KEY (role_id) REFERENCES role(role_id)
 );
 
-CREATE TABLE role (
-    role_id INT PRIMARY KEY AUTO_INCREMENT,
-    role_desc VARCHAR(100)
+CREATE TABLE employee (
+    employee_cid INT PRIMARY KEY,
+    employee_email VARCHAR(100) UNIQUE NOT NULL,
+    employee_name VARCHAR(100) NOT NULL,
+    employee_passwd VARCHAR(255) NOT NULL,
+    phone_num VARCHAR(20)
 );
 
 CREATE TABLE client (
     client_cid INT PRIMARY KEY,
     client_email VARCHAR(100) UNIQUE NOT NULL,
     client_name VARCHAR(100) NOT NULL,
-    client_passwd VARCHAR(100) NOT NULL,
+    client_passwd VARCHAR(255) NOT NULL,
     phone_num VARCHAR(20)
 );
 
@@ -43,7 +43,7 @@ CREATE TABLE vehicle (
 );
 
 CREATE TABLE delivery (
-    delivery_id INT PRIMARY KEY AUTO_INCREMENT,
+    delivery_id SERIAL PRIMARY KEY,
     delivery_name VARCHAR(100),
     vehicle_id INT,
 
@@ -51,12 +51,12 @@ CREATE TABLE delivery (
 );
 
 CREATE TABLE status_shipment (
-    status_id INT PRIMARY KEY AUTO_INCREMENT,
-    status_desc VARCHAR(100) 
+    status_id SERIAL PRIMARY KEY,
+    status_desc VARCHAR(100)
 );
 
 CREATE TABLE shipment (
-    shipment_id INT PRIMARY KEY AUTO_INCREMENT,
+    shipment_id SERIAL PRIMARY KEY,
     guide_num VARCHAR(20) UNIQUE NOT NULL,
     client_cid INT,
     receiver_cid INT,

@@ -4,6 +4,10 @@ import swaggerUI from 'swagger-ui-express';
 import { swaggerDocs, swaggerUIOptions } from './swagger.js';
 
 import {
+  loginRoutes as employeeLoginRoutes
+} from '@routes/employee/index.js';
+
+import {
   counterTestRoutes
 } from '@routes/counter/index.js';
 
@@ -33,6 +37,9 @@ app.use(cors({
 
 // Swagger UI
 app.use('/docs', swaggerUI.serve, swaggerUI.setup(swaggerDocs, swaggerUIOptions));
+
+// Employee routes
+app.use('/employee', employeeLoginRoutes);
 
 // Counter routes
 app.use('/counter', counterTestRoutes);

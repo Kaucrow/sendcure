@@ -1,4 +1,5 @@
 pub mod prelude;
+pub mod settings;
 pub mod tui;
 pub mod event;
 pub mod model;

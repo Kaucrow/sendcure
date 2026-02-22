@@ -32,7 +32,7 @@ pub fn render(state: &mut screens::login::State, data: &mut AppData, f: &mut Fra
     f.render_widget(title, chunks[0]);
 
     let width = chunks[0].width.max(3) - 3;
-    let name_scroll = state.inputs.0.input.visual_scroll(width as usize - "* Username: ".len());
+    let name_scroll = state.inputs.0.input.visual_scroll(width as usize - "* C.I.: ".len());
     let password_scroll = state.inputs.1.input.visual_scroll(width as usize - "* Password: ".len());
     let mut name_style = Style::default();
     let mut password_style = Style::default();
@@ -42,7 +42,7 @@ pub fn render(state: &mut screens::login::State, data: &mut AppData, f: &mut Fra
             password_style = password_style.fg(Color::DarkGray);
             f.set_cursor_position((chunks[1].x
                             + ((state.inputs.0.input.visual_cursor()).max(name_scroll) - name_scroll) as u16
-                            + "* Username: ".len() as u16
+                            + "* C.I.: ".len() as u16
                             + 1,
                             chunks[1].y + 1,
                         ));
@@ -63,7 +63,7 @@ pub fn render(state: &mut screens::login::State, data: &mut AppData, f: &mut Fra
         .border_style(name_style);
 
     let input = Paragraph::new(Text::from(Line::from(vec![
-        Span::styled("* Username: ", Style::default().fg(Color::Yellow)),
+        Span::styled("* C.I.: ", Style::default().fg(Color::Yellow)),
         Span::styled(state.inputs.0.input.value(), name_style)
     ])))
     .block(name_block)
@@ -99,7 +99,7 @@ pub fn render(state: &mut screens::login::State, data: &mut AppData, f: &mut Fra
     let help = Paragraph::new(help_text).block(help_block);
     f.render_widget(help, chunks[3]);
 
-    if let Some(popup) = &data.active_popup {
+    if let Some(popup) = &state.active_popup {
         match popup {
             Popup::LoginSuccessful(_) => {
                 let popup_rect = centered_rect(&f.area(), 28, 3)?;
@@ -139,13 +139,13 @@ pub fn render(state: &mut screens::login::State, data: &mut AppData, f: &mut Fra
                 ]))
                 .centered();
 
-                let (yes_style, yes_borders, no_style, no_borders) =
+                /*let (yes_style, yes_borders, no_style, no_borders) =
                     match state.action_sel {
                         None => (Style::default().fg(Color::DarkGray), BorderType::Rounded, Style::default().fg(Color::DarkGray), BorderType::Rounded),
                         Some(0) => (Style::default().fg(Color::Yellow).add_modifier(Modifier::BOLD), BorderType::Thick, Style::default().fg(Color::DarkGray), BorderType::Rounded),
                         Some(1) => (Style::default().fg(Color::DarkGray), BorderType::Rounded, Style::default().fg(Color::Yellow).add_modifier(Modifier::BOLD), BorderType::Thick),
                         _ => panic!()
-                    };
+                    };*/
 
                 let action_chunks = Layout::default()
                     .direction(Direction::Horizontal)
@@ -158,7 +158,7 @@ pub fn render(state: &mut screens::login::State, data: &mut AppData, f: &mut Fra
                     ])
                     .split(popup_chunks[1]);
 
-                let yes_action_block = Block::default()
+                /*let yes_action_block = Block::default()
                     .borders(Borders::ALL)
                     .border_type(yes_borders);
 
@@ -174,13 +174,13 @@ pub fn render(state: &mut screens::login::State, data: &mut AppData, f: &mut Fra
                 let no_action = Paragraph::new("No")
                     .centered()
                     .block(no_action_block)
-                    .style(no_style);
+                    .style(no_style);*/
 
                 f.render_widget(Clear, popup_rect);
                 f.render_widget(popup_block, popup_rect);
                 f.render_widget(server_unavailable, popup_chunks[0]);
-                f.render_widget(yes_action, action_chunks[1]);
-                f.render_widget(no_action, action_chunks[3]);
+                //f.render_widget(yes_action, action_chunks[1]);
+                //f.render_widget(no_action, action_chunks[3]);
             }
             _ => { unimplemented!() }
         }

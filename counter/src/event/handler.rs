@@ -1,6 +1,6 @@
 use crate::{
     prelude::*,
-    model::{TimeoutType, ScreenId, Popup},
+    model::{TimeoutType, ScreenId, PopupId},
 };
 use crossterm::event::{Event as CrosstermEvent};
 
@@ -13,8 +13,8 @@ pub enum Event {
 
     Quit,
     EnterScreen(ScreenId),
+    EnterPopup(Option<PopupId>),
 
-    EnterPopup(Option<Popup>),
     SwitchDiv,
     ToggleDisplayMsg,
     Resize,

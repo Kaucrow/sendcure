@@ -1,8 +1,9 @@
 mod login;
+mod enter_popup;
 
 use crate::{
     prelude::*,
-    model::{ScreenId, screens},
+    model::screens,
     update::{
         common::{quit, switch_input, input},
     },
@@ -20,11 +21,7 @@ pub async fn update(
 
         KeyCode::Tab => switch_input(&mut state.input_mode)?,
 
-        KeyCode::Enter => {
-            if try_login().is_ok() {
-                tx.send(Event::EnterScreen(ScreenId::Login))?;
-            }
-        }
+        KeyCode::Enter => try_login(state, tx).await?,
 
         _ => input(key, &state.input_mode, &mut state.inputs)?
     }

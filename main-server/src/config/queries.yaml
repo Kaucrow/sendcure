@@ -1,3 +1,16 @@
+employee:
+  getByCredentials:
+    SELECT
+      employee_cid AS ci,
+      employee_email AS email,
+      employee_name AS name,
+      employee_passwd AS passwd,
+      phone_num
+    FROM
+      employee
+    WHERE
+      employee_cid = $1
+
 counter:
   testQuery: |
     SELECT 1 AS value

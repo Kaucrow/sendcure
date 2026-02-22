@@ -1,5 +1,9 @@
 # Config
-**/config.toml
+**/settings/*.toml
+!**/settings/*.example.toml
+
+**/config/*.toml
+!**/config/*.example.toml
 
 # Logs
 logs

@@ -1,6 +1,10 @@
 import { z } from 'zod';
 
 export const queriesSchema = z.object({
+  employee: z.object({
+    getByCredentials: z.string(),
+  }),
+
   counter: z.object({
     testQuery: z.string(),
   }),
