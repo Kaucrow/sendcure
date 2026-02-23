@@ -11,6 +11,10 @@ import {
   counterTestRoutes
 } from '@routes/counter/index.js';
 
+import {
+  shipmentGetRoutes
+} from '@routes/shipment/index.js';
+
 import { config, frontend } from '@global/constants.js';
 
 import {
@@ -43,6 +47,9 @@ app.use('/employee', employeeLoginRoutes);
 
 // Counter routes
 app.use('/counter', counterTestRoutes);
+
+// Shipment routes
+app.use('/shipment', shipmentGetRoutes);
 
 /**
  * @swagger

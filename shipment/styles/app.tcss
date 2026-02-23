@@ -1,0 +1,31 @@
+Screen {
+    background: $background;
+}
+
+Header {
+    background: $primary;
+    color: $background;
+    text-style: bold;
+}
+
+Footer {
+    background: $surface;
+    color: $text-muted;
+}
+
+/* DataTable */
+DataTable > .datatable--header {
+    text-style: bold;
+    background: $primary-darken-2;
+    color: $text;
+}
+DataTable > .datatable--cursor {
+    background: $primary-lighten-1;
+    color: $background;
+}
+
+/* Notifications */
+Toast {
+    background: $surface;
+    border: round $primary;
+}
