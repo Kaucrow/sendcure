@@ -38,5 +38,10 @@ Example login:
 ```bash
 ldapwhoami -x -H ldap://localhost:389 -D "uid=juan,ou=users,dc=atlas,dc=com" -w jojos
 ```
-the app should get the users id and password and then use an ldap library to made the search, (in js ldapjs and in rust ldap
-)
+the app should get the users id and password and then use an ldap library to made the search
+
+## traefik
+to see the traefik dashboard in your browser go to the url
+```bash
+dashboard.docker.localhost
+```
