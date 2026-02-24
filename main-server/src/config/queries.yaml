@@ -14,3 +14,21 @@ employee:
 counter:
   testQuery: |
     SELECT 1 AS value
+
+shipment:
+  getByStatus:
+    SELECT
+      shipment_id,
+      guide_num,
+      client_cid,
+      receiver_cid,
+      package_id,
+      delivery_id,
+      status_id,
+      destination_branch,
+      destination_address,
+      shipment_dt
+    FROM
+      shipment
+    WHERE
+      status_id = $1    
