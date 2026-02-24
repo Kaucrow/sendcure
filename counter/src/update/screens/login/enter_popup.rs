@@ -5,7 +5,6 @@ use crate::{
         PopupId,
         popups,
         screens,
-        input::InputMode,
     },
 };
 

@@ -22,7 +22,7 @@ pub use ratatui::{
     backend::CrosstermBackend, Terminal,
     style::{Color, Style},
     text::{Span, Text},
-    widgets::{Block, BorderType, Borders, Paragraph, Clear},
+    widgets::{Block, BorderType, Borders, Paragraph, Clear, List, ListItem, ListState, Wrap, Padding},
 };
 pub use anyhow::{Result, anyhow, bail};
 pub use crossterm::{

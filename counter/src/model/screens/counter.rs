@@ -1,4 +1,7 @@
-use crate::model::{Popup, input::*};
+use crate::{
+    prelude::*,
+    model::{Popup, input::*}
+};
 
 #[derive(Debug, Default)]
 pub struct State {
@@ -6,4 +9,5 @@ pub struct State {
     pub inputs: InputFields,
     pub input_mode: InputMode,
     pub action_sel: Option<u8>,
+    pub sidebar_state: ListState,
 }

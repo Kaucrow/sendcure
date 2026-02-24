@@ -1,6 +1,7 @@
 pub struct HelpText {
     pub common: CommonHelpText,
     pub login: LoginHelpText,
+    pub counter: CounterHelpText,
 }
 
 pub struct CommonHelpText {
@@ -11,6 +12,10 @@ pub struct LoginHelpText {
     pub main: &'static str,
     pub login_failed: &'static str,
     pub login_failed_lock: &'static str,
+}
+
+pub struct CounterHelpText {
+    pub recv_pkg: &'static str,
 }
 
 impl HelpText {
@@ -24,6 +29,9 @@ impl HelpText {
                 login_failed: "Login failed.",
                 login_failed_lock: "Login failed. - Try again in: ",
             },
+            counter: CounterHelpText {
+                recv_pkg: "(Tab) navigation"
+            }
         }
     }
 }
