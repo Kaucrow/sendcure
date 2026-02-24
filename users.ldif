@@ -1,0 +1,83 @@
+# Organizational Units
+dn: ou=users,dc=atlas,dc=com
+objectClass: organizationalUnit
+ou: users
+
+dn: ou=groups,dc=atlas,dc=com
+objectClass: organizationalUnit
+ou: groups
+
+# Users 
+dn: uid=andres.garcia,ou=users,dc=atlas,dc=com
+objectClass: inetOrgPerson
+objectClass: posixAccount
+objectClass: shadowAccount
+cn: Andres Garcia
+sn: Garcia
+uid: andres.garcia
+uidNumber: 10001
+gidNumber: 10001
+homeDirectory: /home/andres.garcia
+mail: andres.garcia@atlas.com
+userPassword: jojos
+
+
+dn: uid=juan,ou=users,dc=atlas,dc=com
+objectClass: inetOrgPerson
+objectClass: posixAccount
+objectClass: shadowAccount
+cn: Juan Perez
+sn: Perez
+uid: juan
+uidNumber: 10002
+gidNumber: 10002
+homeDirectory: /home/juan
+mail: juan@atlas.com
+userPassword: jojos
+
+dn: uid=maria,ou=users,dc=atlas,dc=com
+objectClass: inetOrgPerson
+objectClass: posixAccount
+objectClass: shadowAccount
+cn: Maria Lopez
+sn: Lopez
+uid: maria
+uidNumber: 10003
+gidNumber: 10003
+homeDirectory: /home/maria
+mail: maria@atlas.com
+userPassword: jojos
+
+dn: uid=pedro,ou=users,dc=atlas,dc=com
+objectClass: inetOrgPerson
+objectClass: posixAccount
+objectClass: shadowAccount
+cn: Pedro Ruiz
+sn: Ruiz
+uid: pedro
+uidNumber: 10004
+gidNumber: 10004
+homeDirectory: /home/pedro
+mail: pedro@atlas.com
+userPassword: jojos
+
+# groups
+dn: cn=dispatch,ou=groups,dc=atlas,dc=com
+objectClass: groupOfNames
+cn: dispatch
+member: uid=juan,ou=users,dc=atlas,dc=com
+
+dn: cn=customer-service,ou=groups,dc=atlas,dc=com
+objectClass: groupOfNames
+cn: customer-service
+member: uid=maria,ou=users,dc=atlas,dc=com
+
+dn: cn=counter,ou=groups,dc=atlas,dc=com
+objectClass: groupOfNames
+cn: counter
+member: uid=pedro,ou=users,dc=atlas,dc=com
+
+dn: cn=admins,ou=groups,dc=atlas,dc=com
+objectClass: groupOfNames
+cn: admins
+member: uid=andres.garcia,ou=users,dc=atlas,dc=com

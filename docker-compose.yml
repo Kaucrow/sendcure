@@ -1,0 +1,193 @@
+services:
+  openssl:
+    image: alpine/openssl
+    container_name: certs_gen
+    entrypoint: sh
+    command:
+      - -c
+      - |
+        CERT_DIR=/certs
+        if [ ! -f $$CERT_DIR/ldap_server.key ] || [ ! -f $$CERT_DIR/ldap_server.crt ] || [ ! -f $$CERT_DIR/ldap_ca.crt ]; then
+          echo 'Generating self-signed SSL certificates for OpenLDAP...'
+
+          # CA Key and Certificate
+          openssl genrsa -out $$CERT_DIR/ldap_ca.key 2048
+          openssl req -new -x509 -key $$CERT_DIR/ldap_ca.key -out $$CERT_DIR/ldap_ca.crt -days 3650 -nodes \
+            -subj '/CN=OpenLDAP CA/O=Atlas Corp/OU=IT'
+
+          # Server Key
+          openssl genrsa -out $$CERT_DIR/ldap_server.key 2048
+
+          # Server CSR
+          openssl req -new -key $$CERT_DIR/ldap_server.key -out $$CERT_DIR/ldap_server.csr -nodes \
+            -subj '/CN=rush-cargo/O=Atlas Corp/OU=IT'
+
+          # Sign Server Certificate with CA
+          printf 'subjectAltName=DNS:rush-cargo,IP:127.0.0.1' > $$CERT_DIR/extfile.cnf
+          openssl x509 -req -in $$CERT_DIR/ldap_server.csr -CA $$CERT_DIR/ldap_ca.crt \
+            -CAkey $$CERT_DIR/ldap_ca.key -CAcreateserial -out $$CERT_DIR/ldap_server.crt -days 365 -sha256 \
+            -extfile $$CERT_DIR/extfile.cnf
+          rm -f $$CERT_DIR/extfile.cnf
+        else
+          echo 'OpenLDAP certificates already exist. Skipping generation.'
+        fi
+
+        if [ ! -f $$CERT_DIR/traefik.key ] || [ ! -f $$CERT_DIR/traefik.crt ]; then
+          echo 'Generating SSL certificates for Traefik...'
+          openssl genrsa -out $$CERT_DIR/traefik.key 2048
+          openssl req -new -key $$CERT_DIR/traefik.key -out $$CERT_DIR/traefik.csr -nodes \
+            -subj '/CN=localhost/O=Atlas Corp/OU=IT'
+            
+          printf 'subjectAltName=DNS:localhost,IP:127.0.0.1' > $$CERT_DIR/extfile_traefik.cnf
+          openssl x509 -req -in $$CERT_DIR/traefik.csr -CA $$CERT_DIR/ldap_ca.crt \
+            -CAkey $$CERT_DIR/ldap_ca.key -CAcreateserial -out $$CERT_DIR/traefik.crt -days 365 -sha256 \
+            -extfile $$CERT_DIR/extfile_traefik.cnf
+          rm -f $$CERT_DIR/extfile_traefik.cnf
+        else
+          echo 'Traefik certificates already exist. Skipping generation.'
+        fi 
+    volumes:
+      - ./certs:/certs
+    
+  
+  openldap:
+    image: osixia/openldap:1.5.0
+    container_name: rush-cargo
+    networks:
+      - core
+    environment:
+      LDAP_ADMIN_PASSWORD: admin20
+      LDAP_DOMAIN: atlas.com
+      LDAP_BASE_DN: dc=atlas,dc=com
+
+      LDAP_TLS: "true"
+      LDAP_TLS_CRT_FILENAME: ldap_server.crt
+      LDAP_TLS_KEY_FILENAME: ldap_server.key
+      LDAP_TLS_CA_CRT_FILENAME: ldap_ca.crt
+    volumes:
+    # this will probably have errors as we dont have slapd
+      - ./certs:/container/service/slapd/assets/certs
+      - ./users.ldif:/container/service/slapd/assets/config/bootstrap/ldif/custom/users.ldif:ro
+    restart: unless-stopped
+    healthcheck:
+      test: ["CMD", "ldapsearch", "-x", "-H", "ldap://localhost", "-b", "dc=atlas,dc=com", "-D", "cn=admin,dc=atlas,dc=com", "-w", "admin20"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+    depends_on:
+      - openssl
+
+  traefik:
+    image: traefik:v3.6
+    networks:
+      - proxy
+    command:
+      - "--entrypoints.web.address=:80"
+      - "--entrypoints.web.http.redirections.entrypoint.to=websecure"
+      - "--entrypoints.web.http.redirections.entrypoint.scheme=https"
+      - "--entrypoints.web.http.redirections.entrypoint.permanent=true"
+      - "--entrypoints.websecure.address=:443"
+      - "--entrypoints.websecure.http.tls=true"
+    
+      - "--providers.file.filename=/traefik-dynamic.yml"
+      
+      - "--providers.docker=true"
+      - "--providers.docker.exposedbydefault=false"
+      - "--providers.docker.network=proxy"
+
+      - "--api.dashboard=true"
+      - "--api.insecure=false"
+
+      - "--log.level=INFO"
+      - "--accesslog=true"
+      - "--metrics.prometheus=true"
+    
+    labels:
+      - "traefik.enable=true"
+      - "traefik.http.routers.dashboard.rule=Host(`dashboard.docker.localhost`)"
+      - "traefik.http.routers.dashboard.service=api@internal"
+      - "traefik.http.routers.dashboard.entrypoints=websecure"
+      - "traefik.http.routers.dashboard.tls=true"
+      - "traefik.http.services.frontend.loadbalancer.server.port=3000"
+
+    ports:
+      - "80:80"
+      - "443:443"
+    volumes:
+      - "/var/run/docker.sock:/var/run/docker.sock:ro"
+      - "./traefik-dynamic.yml:/traefik-dynamic.yml:ro"
+      - "./certs:/certs:ro"
+    depends_on:
+      - openssl
+  
+  database:
+    image: postgres:15-alpine
+    container_name: db
+    environment:
+    # these should be moved to .env file and not hardcoded here: todo
+      POSTGRES_USER: dbadmin
+      POSTGRES_PASSWORD: securepassword
+      POSTGRES_DB: shipping_db
+    networks:
+      - core
+    restart: unless-stopped
+  
+  main_server:
+    image: node:20-alpine
+    container_name: main_server
+    networks:
+      - core
+      - app
+    depends_on:
+      - openldap
+      - database
+  
+  front:
+    image: node:22-alpine
+    container_name: front
+    networks:
+      - proxy
+      - app
+    labels:
+      - "traefik.enable=true"
+      - "traefik.http.routers.frontend.rule=Host(`atlas.com`)"
+      - "traefik.http.routers.frontend.entrypoints=websecure"
+      - "traefik.http.routers.frontend.tls=true"
+    depends_on:
+      - main_server
+  
+  cli_dispatch:
+    image: alpine
+    container_name: dispatch
+    command: /bin/sh
+    stdin_open: true
+    tty: true
+    networks:
+      - app
+  
+  cli_counter:
+    image: alpine
+    container_name: counter
+    command: /bin/sh
+    stdin_open: true
+    tty: true
+    networks:
+      - app
+
+  cli_customerService:
+    image: alpine
+    container_name: customer_service
+    command: /bin/sh
+    stdin_open: true
+    tty: true
+    networks:
+      - app
+
+networks:
+  proxy:
+    name: proxy
+  app:
+    name: app
+  core:
+    name: core
+    internal: true

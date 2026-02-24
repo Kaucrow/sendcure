@@ -1,0 +1,12 @@
+http:
+  routers:
+    https:
+      rule: "Host(`atlas.com`) && Path(`/api`)()"
+      service: openldap
+      tls:
+        certResolver: "letsencrypt"
+        options: "modern-tls"
+        domains:
+          - main: "atlas.com"
+            sans:
+              - "www.atlas.com"
