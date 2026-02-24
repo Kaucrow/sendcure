@@ -1,6 +1,6 @@
 pub use crate::{
     HELP_TEXT,
-    model::{App, AppData},
+    model::App,
     event::Event,
 };
 pub use std::{

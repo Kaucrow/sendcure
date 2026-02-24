@@ -1,5 +1,5 @@
-use crate::prelude::*;
 use crate::{
+    prelude::*,
     HELP_TEXT,
     model::{
         common::TimeoutType,
@@ -7,10 +7,10 @@ use crate::{
         screens,
         Popup,
     },
-    ui::centered_rect,
+    ui::{popups, centered_rect},
 };
 
-pub fn render(state: &mut screens::login::State, data: &mut AppData, f: &mut Frame) -> Result<()> {
+pub fn render(app: &App, state: &screens::login::State, f: &mut Frame) -> Result<()> {
     let chunks = Layout::default()
         .direction(Direction::Vertical)
         .constraints([
@@ -87,7 +87,7 @@ pub fn render(state: &mut screens::login::State, data: &mut AppData, f: &mut Fra
 
     let help_text = {
         if state.failed_logins == 3 {
-            Line::styled(format!("{}{}", HELP_TEXT.login.login_failed_lock, data.timeout.get(&TimeoutType::Login).unwrap().counter), Style::default().fg(Color::Red))
+            Line::styled(format!("{}{}", HELP_TEXT.login.login_failed_lock, app.timeout.get(&TimeoutType::Login).unwrap().counter), Style::default().fg(Color::Red))
         }
         else if state.failed_logins > 0 {
             Line::styled(HELP_TEXT.login.login_failed, Style::default().fg(Color::Red))
@@ -101,88 +101,8 @@ pub fn render(state: &mut screens::login::State, data: &mut AppData, f: &mut Fra
 
     if let Some(popup) = &state.active_popup {
         match popup {
-            Popup::LoginSuccessful(_) => {
-                let popup_rect = centered_rect(&f.area(), 28, 3)?;
-
-                let login_successful_block = Block::default()
-                    .borders(Borders::ALL)
-                    .border_type(BorderType::Thick);
-
-                let login_successful_popup = Paragraph::new(Text::from(
-                    "Login successful."
-                ))
-                .alignment(Alignment::Center)
-                .block(login_successful_block);
-
-                f.render_widget(Clear, popup_rect);
-                f.render_widget(login_successful_popup, popup_rect);
-            }
-            Popup::ServerUnavailable(state) => {
-                let popup_rect = centered_rect(&f.area(), 55, 7)?;
-
-                let popup_chunks = Layout::default()
-                    .direction(Direction::Vertical)
-                    .constraints([
-                        Constraint::Min(2),
-                        Constraint::Percentage(100)
-                    ])
-                    .split(popup_rect.inner(Margin::new(1, 1)));
-
-                let popup_block = Block::default()
-                    .borders(Borders::ALL)
-                    .border_type(BorderType::Thick)
-                    .style(Style::default().fg(Color::Red));
-
-                let server_unavailable = Paragraph::new(Text::from(vec![
-                    Line::raw("The server could not be reached."),
-                    Line::raw("Would you like to login with limited functionality?")
-                ]))
-                .centered();
-
-                /*let (yes_style, yes_borders, no_style, no_borders) =
-                    match state.action_sel {
-                        None => (Style::default().fg(Color::DarkGray), BorderType::Rounded, Style::default().fg(Color::DarkGray), BorderType::Rounded),
-                        Some(0) => (Style::default().fg(Color::Yellow).add_modifier(Modifier::BOLD), BorderType::Thick, Style::default().fg(Color::DarkGray), BorderType::Rounded),
-                        Some(1) => (Style::default().fg(Color::DarkGray), BorderType::Rounded, Style::default().fg(Color::Yellow).add_modifier(Modifier::BOLD), BorderType::Thick),
-                        _ => panic!()
-                    };*/
-
-                let action_chunks = Layout::default()
-                    .direction(Direction::Horizontal)
-                    .constraints([
-                        Constraint::Percentage(20),
-                        Constraint::Percentage(20),
-                        Constraint::Percentage(20),
-                        Constraint::Percentage(20),
-                        Constraint::Percentage(20),
-                    ])
-                    .split(popup_chunks[1]);
-
-                /*let yes_action_block = Block::default()
-                    .borders(Borders::ALL)
-                    .border_type(yes_borders);
-
-                let yes_action = Paragraph::new("Yes")
-                    .centered()
-                    .block(yes_action_block)
-                    .style(yes_style);
-
-                let no_action_block = Block::default()
-                    .borders(Borders::ALL)
-                    .border_type(no_borders);
-
-                let no_action = Paragraph::new("No")
-                    .centered()
-                    .block(no_action_block)
-                    .style(no_style);*/
-
-                f.render_widget(Clear, popup_rect);
-                f.render_widget(popup_block, popup_rect);
-                f.render_widget(server_unavailable, popup_chunks[0]);
-                //f.render_widget(yes_action, action_chunks[1]);
-                //f.render_widget(no_action, action_chunks[3]);
-            }
-            _ => { unimplemented!() }
+            Popup::LoginSuccessful(pop_state) => popups::login::successful::render(app, state, pop_state, f)?,
+            _ => unimplemented!()
         }
     }
 

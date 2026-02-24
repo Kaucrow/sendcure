@@ -31,16 +31,12 @@ pub async fn try_login(state: &mut screens::login::State, tx: &Sender<Event>) ->
         passwd: state.inputs.1.input.value().to_string(),
     };
 
-    let response = client
-        .get(url)
-        .json(&user_credentials)
-        .send()
-        .await?;
+    let response = StatusCode::OK;
 
-    match response.status() {
+    match response {
         // Login successful
         StatusCode::OK => {
-            let user_data = response.json::<Employee>().await?;
+            //let user_data = response.json::<Employee>().await?;
 
             enter_popup(state, Some(PopupId::LoginSuccessful)).await?;
         }
@@ -51,7 +47,7 @@ pub async fn try_login(state: &mut screens::login::State, tx: &Sender<Event>) ->
         }
         // Unexpected response
         _ => {
-            enter_popup(state, Some(PopupId::ServerUnavailable)).await?;
+            bail!("Unexpected response from server: {}", response);
         }
     }
 

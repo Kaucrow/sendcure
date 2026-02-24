@@ -5,7 +5,7 @@ pub mod screens;
 pub mod popups;
 pub mod input;
 
-pub use app::{App, AppData};
+pub use app::App;
 pub use screens::{Screen, ScreenId};
 pub use popups::{Popup, PopupId};
 pub use common::*;
