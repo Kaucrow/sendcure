@@ -133,8 +133,7 @@ services:
     restart: unless-stopped
   
   main_server:
-    image: node:20-alpine
-    container_name: main_server
+    build: ./main-server
     networks:
       - core
       - app
@@ -157,8 +156,7 @@ services:
       - main_server
   
   cli_dispatch:
-    image: alpine
-    container_name: dispatch
+    build: ./shipment
     command: /bin/sh
     stdin_open: true
     tty: true
@@ -166,8 +164,7 @@ services:
       - app
   
   cli_counter:
-    image: alpine
-    container_name: counter
+    build: ./counter
     command: /bin/sh
     stdin_open: true
     tty: true
