@@ -5,10 +5,10 @@ use crate::{
 use crossterm::event::{Event as CrosstermEvent};
 
 pub fn input(key_event: KeyEvent, input_mode: &InputMode, inputs: &mut InputFields) -> Result<()> {
-    let input_field = match input_mode {
-        InputMode::Editing(0) => &mut inputs.0,
-        InputMode::Editing(1) => &mut inputs.1,
-        _ => bail!("Invalid input mode: {:?}", input_mode)
+    let input_field = if let InputMode::Editing(idx) = input_mode {
+        inputs.get_mut(*idx as usize)?
+    } else {
+        bail!("Invalid input mode: {:?}", input_mode)
     };
 
     // If key input is a character

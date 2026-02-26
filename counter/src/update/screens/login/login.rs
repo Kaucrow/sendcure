@@ -27,16 +27,20 @@ pub async fn try_login(state: &mut screens::login::State, tx: &Sender<Event>) ->
     let client = reqwest::Client::new();
 
     let user_credentials = LoginRequest {
-        ci: state.inputs.0.input.value().to_string(),
-        passwd: state.inputs.1.input.value().to_string(),
+        ci: state.inputs.get(0)?.input.value().to_string(),
+        passwd: state.inputs.get(1)?.input.value().to_string(),
     };
 
-    let response = StatusCode::OK;
+    let response = client
+        .get(url)
+        .json(&user_credentials)
+        .send()
+        .await?;
 
-    match response {
+    match response.status() {
         // Login successful
         StatusCode::OK => {
-            //let user_data = response.json::<Employee>().await?;
+            let user_data = response.json::<Employee>().await?;
 
             enter_popup(state, Some(PopupId::LoginSuccessful)).await?;
         }
@@ -47,7 +51,7 @@ pub async fn try_login(state: &mut screens::login::State, tx: &Sender<Event>) ->
         }
         // Unexpected response
         _ => {
-            bail!("Unexpected response from server: {}", response);
+            bail!("Unexpected response from server: {:?}", response);
         }
     }
 

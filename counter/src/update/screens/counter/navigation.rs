@@ -1,9 +1,9 @@
 use crate::{
     prelude::*,
-    model::screens::counter::State,
+    model::screens,
 };
 
-pub fn switch_subscreen(state: &mut State, key_code: KeyCode) {
+pub fn switch_subscreen(state: &mut screens::counter::State, key_code: KeyCode) {
     let item_count = 2; 
 
     match key_code {
