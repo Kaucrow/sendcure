@@ -34,7 +34,7 @@ pub async fn update(
     match key.code {
         KeyCode::Esc => quit(app)?,
 
-        KeyCode::Tab => switch_input(&mut state.input_mode)?,
+        KeyCode::F(2) => switch_input(&mut state.input_mode)?,
 
         KeyCode::Enter => try_login(state, tx).await?,
 
