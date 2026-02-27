@@ -1,10 +1,7 @@
 use counter::{
     prelude::*,
     event::EventHandler,
-    model::{
-        ScreenId,
-        help_text::HelpText
-    },
+    model::ScreenId,
     tui::Tui,
     update::update,
 };
@@ -24,7 +21,7 @@ async fn main() -> Result<()> {
     let mut tui = Tui::new(terminal, event_handler);
     tui.enter()?;
 
-    tui.event_handler.tx.send(Event::EnterScreen(ScreenId::Login))?;
+    tui.event_handler.tx.send(Event::EnterScreen(ScreenId::Counter))?;
 
     while !app.should_quit {
         if let Ok(event) = tui.event_handler.next() {

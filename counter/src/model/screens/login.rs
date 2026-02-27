@@ -4,7 +4,6 @@ use crate::model::{Popup, input::*};
 pub struct State {
     pub active_popup: Option<Popup>,
     pub inputs: InputFields,
-    pub input_mode: InputMode,
     pub failed_logins: u8,
     pub action_sel: Option<u8>,
 }

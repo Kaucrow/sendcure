@@ -1,6 +1,6 @@
 use crate::{
     prelude::*,
-    model::screens,
+    model::screens::self,
 };
 
 pub fn switch_subscreen(state: &mut screens::counter::State, key_code: KeyCode) {

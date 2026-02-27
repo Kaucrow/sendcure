@@ -7,6 +7,7 @@ use crate::{
     HELP_TEXT,
     model::screens,
     ui::centered_rect,
+    model::screens::counter,
 };
 
 pub fn render(app: &App, state: &screens::counter::State, f: &mut Frame) -> Result<()> {
@@ -164,13 +165,12 @@ pub fn render(app: &App, state: &screens::counter::State, f: &mut Frame) -> Resu
     let packages_inner_area = packages_block.inner(main_chunks[1]);
     f.render_widget(packages_block, main_chunks[1]);
 
-    if state.client.is_none() { 
+    if state.client.is_none() {
         no_client::render(app, state, packages_inner_area, f)?;
     } else {
-        match state.sidebar_state.selected() {
-            Some(0) => recv_pkg::render(app, state, packages_inner_area, f)?,
-            Some(1) => send_pkg::render(app, state, packages_inner_area, f)?,
-            selection => unimplemented!("Sidebar {:?} on counter", selection)
+        match state.tabs.get(state.sidebar_state.selected().unwrap())? {
+            counter::Tab::Received(tab_state) => recv_pkg::render(app, state, tab_state, packages_inner_area, f)?,
+            counter::Tab::Send(tab_state) => send_pkg::render(app, state, tab_state, packages_inner_area, f)?,
         }
     }
 

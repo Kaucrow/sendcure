@@ -1,15 +1,11 @@
 use crate::{
     prelude::*,
-    model::input::{InputFields, InputMode, InputBlacklist},
+    model::input::*,
 };
 use crossterm::event::{Event as CrosstermEvent};
 
-pub fn input(key_event: KeyEvent, input_mode: &InputMode, inputs: &mut InputFields) -> Result<()> {
-    let input_field = if let InputMode::Editing(idx) = input_mode {
-        inputs.get_mut(*idx as usize)?
-    } else {
-        bail!("Invalid input mode: {:?}", input_mode)
-    };
+pub fn input(key_event: KeyEvent, inputs: &mut InputFields) -> Result<()> {
+    let input_field = inputs.selected_mut().ok_or(anyhow!("No input selected"))?;
 
     // If key input is a character
     if let KeyCode::Char(char) = key_event.code {
@@ -62,13 +58,5 @@ pub fn input(key_event: KeyEvent, input_mode: &InputMode, inputs: &mut InputFiel
 
     input_field.input.handle_event(&CrosstermEvent::Key(key_event));
 
-    Ok(())
-}
-
-pub fn switch_input(input_mode: &mut InputMode) -> Result<()> {
-    if let InputMode::Editing(field) = input_mode {
-        if *field == 0 { *input_mode = InputMode::Editing(1) }
-        else { *input_mode = InputMode::Editing(0) }
-    }
     Ok(())
 }

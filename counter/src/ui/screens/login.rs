@@ -3,13 +3,13 @@ use crate::{
     HELP_TEXT,
     model::{
         common::TimeoutType,
-        input::InputMode,
         screens,
         Popup,
     },
     ui::{popups, centered_rect},
 };
 
+#[allow(unreachable_patterns)]
 pub fn render(app: &App, state: &screens::login::State, f: &mut Frame) -> Result<()> {
     let chunks = Layout::default()
         .direction(Direction::Vertical)
@@ -37,7 +37,7 @@ pub fn render(app: &App, state: &screens::login::State, f: &mut Frame) -> Result
     let mut name_style = Style::default();
     let mut password_style = Style::default();
 
-    if let InputMode::Editing(field) = state.input_mode {
+    if let Some(field) = state.inputs.selected_idx() {
         if field == 0 {
             password_style = password_style.fg(Color::DarkGray);
             f.set_cursor_position((chunks[1].x

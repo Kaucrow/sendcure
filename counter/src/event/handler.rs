@@ -4,8 +4,6 @@ use crate::{
 };
 use crossterm::event::{Event as CrosstermEvent};
 
-const SENDER_ERR: &'static str = "could not send terminal event";
-
 /// Terminal events
 #[derive(Debug)]
 pub enum Event {

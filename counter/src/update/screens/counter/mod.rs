@@ -1,14 +1,16 @@
 mod navigation;
 mod recv_pkg;
+mod send_pkg;
 
 use crate::{
     prelude::*,
-    model::{screens, screens::counter::Package},
+    model::screens::{self, counter},
     update::common::{quit, input, navigate}
 };
 
 use navigation::switch_subscreen;
 
+#[allow(unreachable_patterns)]
 pub async fn update(
     app: &mut App,
     state: &mut screens::counter::State,
@@ -29,24 +31,8 @@ pub async fn update(
             match key.code {
                 KeyCode::Enter => {
                     state.client = Some(state.inputs.get(0)?.input.value().parse::<u32>()?);
-                    state.packages.push(Package {
-                        package_id: 0,
-                        package_desc: "Elatla".to_string(),
-                        package_weight: 67.89,
-                        package_height: 1,
-                        package_length: 2,
-                        package_width: 3,
-                    });
-                    state.packages.push(Package {
-                        package_id: 1,
-                        package_desc: "Elatlillo".to_string(),
-                        package_weight: 6.7,
-                        package_height: 3,
-                        package_length: 2,
-                        package_width: 1,
-                    });
                 },
-                _ => input(key, &state.input_mode, &mut state.inputs)?
+                _ => input(key, &mut state.inputs)?
             };
         }
         // Sidebar
@@ -59,9 +45,9 @@ pub async fn update(
         }
         // Main tab
         Some(2) => {
-            match state.sidebar_state.selected() {
-                Some(0) => recv_pkg::update(state, key.code),
-                Some(1) => todo!("receive pkg update"),
+            match state.tabs.get_mut(state.sidebar_state.selected().unwrap())? {
+                counter::Tab::Received(tab_state) => recv_pkg::update(tab_state, key.code),
+                counter::Tab::Send(tab_state) => send_pkg::update(tab_state, key)?,
                 _ => unimplemented!()
             }
         }
