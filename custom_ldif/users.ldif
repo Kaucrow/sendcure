@@ -1,0 +1,47 @@
+dn: ou=users,dc=atlas,dc=com
+objectClass: organizationalUnit
+ou: users
+
+dn: uid=andres.garcia,ou=users,dc=atlas,dc=com
+objectClass: inetOrgPerson
+objectClass: posixAccount
+uid: andres.garcia
+uidNumber: 10001
+gidNumber: 10001
+homeDirectory: /home/andres.garcia
+cn: Andres Garcia
+sn: Garcia
+userPassword: jojos
+
+dn: uid=juan,ou=users,dc=atlas,dc=com
+objectClass: inetOrgPerson
+objectClass: posixAccount
+uid: juan
+uidNumber: 10002
+gidNumber: 10002
+homeDirectory: /home/juan
+cn: Juan Perez
+sn: Perez
+userPassword: jojos
+
+dn: uid=maria,ou=users,dc=atlas,dc=com
+objectClass: inetOrgPerson
+objectClass: posixAccount
+uid: maria
+uidNumber: 10003
+gidNumber: 10003
+homeDirectory: /home/maria
+cn: Maria Lopez
+sn: Lopez
+userPassword: jojos
+
+dn: uid=pedro,ou=users,dc=atlas,dc=com
+objectClass: inetOrgPerson
+objectClass: posixAccount
+uid: pedro
+uidNumber: 10004
+gidNumber: 10004
+homeDirectory: /home/pedro
+cn: Pedro Ruiz
+sn: Ruiz
+userPassword: jojos

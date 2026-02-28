@@ -166,3 +166,5 @@ target
 **/mutants.out*/
 
 /certs
+ldap_config
+ldap_data

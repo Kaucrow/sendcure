@@ -3,6 +3,12 @@
 A minimal OpenLDAP container setup using `osixia/openldap`.
 
 ## Quick start
+0. Create your env file:
+	 ```bash
+	 cp .env.example .env
+	 ```
+	Then edit `.env` with your local secrets and router host.
+
 1. Start the server:
 	 ```bash
 	 docker compose up -d
@@ -45,3 +51,10 @@ to see the traefik dashboard in your browser go to the url
 ```bash
 dashboard.docker.localhost
 ```
+
+## Traefik TLS (local self-signed)
+
+- TLS options are defined in `traefik-dynamic.yml` under `tls.options.modern` and applied to routers with:
+	- `traefik.http.routers.<name>.tls.options=modern@file`
+- Certificates are generated locally by the `openssl` service and loaded by Traefik from `./certs`.
+- Set `TRAEFIK_FRONTEND_HOST` in `.env` to the host you use in development (for example `atlas.com` in your local hosts file).
