@@ -48,6 +48,10 @@ class LdapComponent {
 
             await client.bind(entry.dn, input.password);
 
+            if (ldapConfig.bindDn && ldapConfig.bindPassword) {
+                await client.bind(ldapConfig.bindDn, ldapConfig.bindPassword);
+            }
+
             const groupBaseDn = ldapConfig.groupBaseDn ?? ldapConfig.baseDn;
             let role: string | undefined;
             try {

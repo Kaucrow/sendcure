@@ -4,6 +4,7 @@ import { logger } from '@components/index.js';
 import { ldap } from '@components/ldap.js';
 
 const router = Router();
+const ROLE_GROUPS = new Set(['counter', 'dispatch', 'customer-service', 'admins']);
 
 const asString = (value: unknown): string => {
   if (Array.isArray(value)) {
@@ -53,6 +54,11 @@ router.post('/login', async (req, res) => {
       return res.status(400).json({ message: 'CI and password are required.' });
     }
 
+    const requestedRole = asString(req.body?.role ?? req.query?.role ?? 'counter').toLowerCase();
+    if (!ROLE_GROUPS.has(requestedRole)) {
+      return res.status(400).json({ message: 'Invalid requested role.' });
+    }
+
     const ldapUser = await ldap.authenticate({ 
       uid: String(ci),
       password: passwd
@@ -61,7 +67,13 @@ router.post('/login', async (req, res) => {
       return res.status(401).json({ message: 'Invalid CI or password.' });
     }
 
-    const role = ldapUser.role ?? 'counter';
+    const role = asString(ldapUser.role).toLowerCase();
+    if (!role) {
+      return res.status(403).json({ message: 'User has no assigned role.' });
+    }
+    if (role !== requestedRole) {
+      return res.status(403).json({ message: `User is not authorized for role: ${requestedRole}.` });
+    }
 
 
     const safeEmployee = publicEmployeeSchema.parse({
