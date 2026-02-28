@@ -1,9 +1,0 @@
-debug = true
-
-[server]
-host = 'localhost'
-port = 8000
-protocol = 'http'
-
-[server.endpoints]
-login = '/employee/login'

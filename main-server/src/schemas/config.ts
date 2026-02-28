@@ -17,4 +17,14 @@ export const configSchema = z.object({
     user: z.string(),
     pass: z.string()
   }),
+  ldap: z.object({
+    url: z.string(),
+    baseDn: z.string(),
+    bindDn: z.string().optional(),
+    bindPassword: z.string().optional(),
+    userFilter: z.string(),
+    groupBaseDn: z.string().optional(),
+    caPath: z.string().optional(),
+    tlsRejectUnauthorized: z.boolean().optional()
+  })
 });

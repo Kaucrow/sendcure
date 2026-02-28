@@ -34,3 +34,14 @@ export const database = {
 export const queries = queriesSchema.parse(
   yaml.parse(fs.readFileSync('./src/config/queries.yaml', 'utf-8'))
 );
+
+export const ldap = {
+  url: config.ldap.url,
+  baseDn: config.ldap.baseDn,
+  bindDn: config.ldap.bindDn,
+  bindPassword: config.ldap.bindPassword,
+  userFilter: config.ldap.userFilter,
+  groupBaseDn: config.ldap.groupBaseDn,
+  caPath: config.ldap.caPath,
+  tlsRejectUnauthorized: config.ldap.tlsRejectUnauthorized,
+};

@@ -32,7 +32,7 @@ pub async fn try_login(state: &mut screens::login::State, tx: &Sender<Event>) ->
     };
 
     let response = client
-        .get(url)
+        .post(url)
         .json(&user_credentials)
         .send()
         .await?;
