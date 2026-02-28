@@ -14,3 +14,27 @@ employee:
 counter:
   testQuery: |
     SELECT 1 AS value
+
+  client:
+    exists: |
+      SELECT EXISTS(SELECT 1 FROM client WHERE client_cid = $1)
+
+  package:
+    getReceived: |
+      SELECT 
+        p.package_id AS id,
+        p.package_desc AS desc,
+        p.package_weight AS weight,
+        p.package_width AS width,
+        p.package_length AS length,
+        p.package_height AS height,
+        s.guide_num,
+        s.shipment_dt,
+        s.destination_address
+      FROM 
+        shipment s
+      JOIN 
+        package p ON s.package_id = p.package_id
+      WHERE 
+        s.receiver_cid = $1 
+        AND s.status_id = 2

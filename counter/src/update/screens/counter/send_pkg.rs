@@ -11,8 +11,8 @@ pub fn update(tab_state: &mut counter::send_pkg::State, key_event: KeyEvent) -> 
                 // Inputs
                 Some(0) => {
                     match tab_state.inputs.selected_idx() {
-                        None | Some(0) | Some(1) | Some(2) | Some(3) | Some(4) => tab_state.inputs.next(),
-                        Some(5) => {
+                        None | Some(0) | Some(1) | Some(2) | Some(3) | Some(4) | Some(5) => tab_state.inputs.next(),
+                        Some(6) => {
                             tab_state.action_sel = Some(1);
                             tab_state.inputs.deselect();
                         },
@@ -29,7 +29,7 @@ pub fn update(tab_state: &mut counter::send_pkg::State, key_event: KeyEvent) -> 
                 // Inputs
                 Some(0) => {
                     match tab_state.inputs.selected_idx() {
-                        None | Some(1) | Some(2) | Some(3) | Some(4) | Some(5) => tab_state.inputs.prev(),
+                        None | Some(1) | Some(2) | Some(3) | Some(4) | Some(5) | Some(6) => tab_state.inputs.prev(),
                         _ => {}
                     }
                 }

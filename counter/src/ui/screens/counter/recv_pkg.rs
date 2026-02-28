@@ -27,9 +27,9 @@ pub fn render(
 
     let rows = tab_state.packages.iter().map(|p| {
         Row::new(vec![
-            p.package_id.to_string(),
-            p.package_desc.clone(),
-            format!("{:.2}kg", p.package_weight),
+            p.id.to_string(),
+            p.desc.clone().unwrap_or("Unknown".to_string()),
+            format!("{}kg", p.weight.clone().unwrap_or("Unknown".to_string())),
         ])
     });
 

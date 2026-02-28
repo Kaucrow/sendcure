@@ -18,7 +18,7 @@ pub fn render(app: &App, state: &screens::counter::State, f: &mut Frame) -> Resu
             Constraint::Percentage(100),
             Constraint::Length(1),
         ])
-        .split(centered_rect(&f.area(), 65, 20)?);
+        .split(centered_rect(&f.area(), 65, 22)?);
 
     let width = chunks[0].width.max(3) - 3;
 

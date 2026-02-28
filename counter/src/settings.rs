@@ -23,6 +23,7 @@ impl ServerSettings {
 #[derive(Deserialize)]
 pub struct ServerEndpoints {
     pub login: String,
+    pub received_packages: String,
 }
 
 #[derive(Deserialize, Debug, Display)]

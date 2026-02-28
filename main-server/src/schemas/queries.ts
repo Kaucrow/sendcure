@@ -7,6 +7,12 @@ export const queriesSchema = z.object({
 
   counter: z.object({
     testQuery: z.string(),
+    client: z.object({
+      exists: z.string(),
+    }),
+    package: z.object({
+      getReceived: z.string(),
+    }),
   }),
 
 /*

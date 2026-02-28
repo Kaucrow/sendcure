@@ -7,3 +7,4 @@ protocol = 'http'
 
 [server.endpoints]
 login = '/employee/login'
+received_packages = '/counter/recv-pkg/received'

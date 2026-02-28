@@ -4,7 +4,8 @@ mod send_pkg;
 
 use crate::{
     prelude::*,
-    model::screens::{self, counter},
+    settings::get_settings,
+    model::{input::*, screens::{self, counter}},
     update::common::{quit, input, navigate}
 };
 
@@ -30,10 +31,47 @@ pub async fn update(
         Some(0) => {
             match key.code {
                 KeyCode::Enter => {
-                    state.client = Some(state.inputs.get(0)?.input.value().parse::<u32>()?);
-                },
+                    let ci_input = state.inputs.get(0)?.input.value().parse::<u32>().ok();
+
+                    if let Some(ci) = ci_input {
+                        let settings = get_settings()?;
+
+                        // Fetch received packages
+                        let result = {
+                            let url = format!("{}{}/{}", settings.server.url(), settings.server.endpoints.received_packages, ci);
+                            let response = reqwest::get(&url).await?;
+
+                            response.json::<Vec<counter::recv_pkg::Package>>().await
+                        };
+
+                        match result {
+                            // Got packages
+                            Ok(packages) if !packages.is_empty() => {
+                                state.client = Some(ci);
+
+                                let tabs = counter::Tabs::new(vec![
+                                    counter::Tab::Received(counter::recv_pkg::State {
+                                        packages,
+                                        ..Default::default()
+                                    }),
+                                    counter::Tab::Send(counter::send_pkg::State {
+                                        inputs: InputFields::new(7),
+                                        action_sel: Some(0),
+                                    })
+                                ]);
+
+                                state.tabs = tabs;
+                            },
+                            // Server responded with an error
+                            _ => {
+                                //state. = Some("Client not found or no packages received".to_string());
+                                return Ok(()); 
+                            },
+                        }
+                    }
+                }
                 _ => input(key, &mut state.inputs)?
-            };
+            }
         }
         // Sidebar
         Some(1) => {

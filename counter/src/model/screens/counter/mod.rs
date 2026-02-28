@@ -39,7 +39,7 @@ impl Tabs {
     pub fn get_mut(&mut self, idx: usize) -> Result<&mut Tab> {
         self.tabs
             .get_mut(idx)
-            .ok_or(anyhow::Error::msg(format!("No input object for idx {}", idx)))
+            .ok_or(anyhow::Error::msg(format!("No tab for idx {}", idx)))
     }
 }
 

@@ -1,13 +1,17 @@
 use crate::prelude::*;
 
-#[derive(Debug)]
+#[derive(Debug, Deserialize, Clone)]
+#[serde(rename_all = "camelCase")]
 pub struct Package {
-    pub package_id: i32,
-    pub package_desc: String,
-    pub package_weight: f64,
-    pub package_width: i32,
-    pub package_length: i32,
-    pub package_height: i32,
+    pub id: i32,
+    pub desc: Option<String>,
+    pub weight: Option<String>,
+    pub width: Option<i32>,
+    pub length: Option<i32>,
+    pub height: Option<i32>,
+    pub guide_num: String,
+    pub shipment_dt: String,
+    pub destination_address: String,
 }
 
 #[derive(Debug, Default)]
