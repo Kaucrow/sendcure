@@ -2,6 +2,10 @@ dn: ou=users,dc=atlas,dc=com
 objectClass: organizationalUnit
 ou: users
 
+dn: ou=groups,dc=atlas,dc=com
+objectClass: organizationalUnit
+ou: groups
+
 dn: uid=andres.garcia,ou=users,dc=atlas,dc=com
 objectClass: inetOrgPerson
 objectClass: posixAccount
@@ -45,3 +49,23 @@ homeDirectory: /home/pedro
 cn: Pedro Ruiz
 sn: Ruiz
 userPassword: jojos
+
+dn: cn=counter,ou=groups,dc=atlas,dc=com
+objectClass: groupOfNames
+cn: counter
+member: uid=andres.garcia,ou=users,dc=atlas,dc=com
+
+dn: cn=dispatch,ou=groups,dc=atlas,dc=com
+objectClass: groupOfNames
+cn: dispatch
+member: uid=juan,ou=users,dc=atlas,dc=com
+
+dn: cn=customer-service,ou=groups,dc=atlas,dc=com
+objectClass: groupOfNames
+cn: customer-service
+member: uid=maria,ou=users,dc=atlas,dc=com
+
+dn: cn=admins,ou=groups,dc=atlas,dc=com
+objectClass: groupOfNames
+cn: admins
+member: uid=pedro,ou=users,dc=atlas,dc=com

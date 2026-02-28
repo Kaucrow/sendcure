@@ -26,6 +26,9 @@ A minimal OpenLDAP container setup using `osixia/openldap`.
         docker compose down -v
     ```
 
+## Command to log into the CLIs
+docker attach rushcargo-cli_counter-1
+docker attach rushcargo-cli_dispatch-1
 
 ## User logins
 
@@ -43,10 +46,10 @@ User bind DNs and passwords:
 
 Each user logs in with their **uidNumber** and **password**.
 
-- Andres Garcia: `10001` / `jojos`
-- Juan Perez: `10002` / `jojos`
-- Maria Lopez: `10003` / `jojos`
-- Pedro Ruiz: `10004` / `jojos`
+- Andres Garcia: `10001` / `jojos` Group: Counter
+- Juan Perez: `10002` / `jojos` Group: Dispatch
+- Maria Lopez: `10003` / `jojos` Group: Customer Service
+- Pedro Ruiz: `10004` / `jojos` Group: Admin
 
 Example login **(not CLIs):**
 

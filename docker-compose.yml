@@ -168,7 +168,7 @@ services:
   
   cli_dispatch:
     build: ./shipment
-    command: /bin/sh
+    command: ["python", "main.py"]
     stdin_open: true
     tty: true
     networks:
