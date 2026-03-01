@@ -9,7 +9,7 @@ VALUES
 INSERT INTO status_shipment (status_id, status_desc) VALUES 
 (0, 'ON_COUNTER'),
 (1, 'ON_TRANSIT'),
-(2, 'DELIVERED');
+(2, 'DELIVERED'),
 (3, 'PICKED_UP');
 
 -- Client

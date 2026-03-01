@@ -1,6 +1,10 @@
 import { Router } from 'express';
 import { queries } from '@global/constants.js';
-import { receivedPackageSchema, clientExistsSchema } from '@schemas/db/counter/index.js';
+import {
+  receivedPackageSchema,
+  clientExistsSchema,
+  shipmentStatusSchema,
+} from '@schemas/db/counter/index.js';
 import { db, logger } from '@components/index.js';
 
 const router = Router();
@@ -95,6 +99,64 @@ router.get('/recv-pkg/received/:client_cid', async (req, res) => {
   } catch (err) {
     logger.error(`Error getting received packages for client ${req.params.client_cid}: ${err}`);
     return res.status(500).json({ message: 'A server error occurred.' });
+  }
+});
+
+/**
+ * @swagger
+ * /recv-pkg/pickup/{guide_num}:
+ *  put:
+ *    tags:
+ *      - counter
+ *    description: Updates a shipment status to "Picked Up" (ID 3) using its guide number.
+ *    parameters:
+ *      - in: path
+ *        name: guide_num
+ *        required: true
+ *        description: The unique tracking/guide number of the package.
+ *        schema:
+ *          type: string
+ *    responses:
+ *      200:
+ *        description: Shipment successfully updated to Picked Up.
+ *      404:
+ *        description: Guide number not found.
+ *      500:
+ *        description: Server error.
+ */
+router.put('/recv-pkg/pickup/:guide_num', async (req, res) => {
+  try {
+    const { guide_num } = req.params;
+
+    const shipmentStatus = await db.fetchOne(
+      queries.counter.shipment.getStatus,
+      shipmentStatusSchema,
+      [guide_num]
+    );
+
+    if (!shipmentStatus) {
+      return res.status(404).json({ message: 'Shipment not found.' });
+    }
+
+    if (shipmentStatus.statusId === 3) {
+      return res.status(400).json({ message: 'This package has already been picked up.' });
+    }
+
+    if (shipmentStatus.statusId === 0 || shipmentStatus.statusId === 1) {
+      return res.status(400).json({ message: 'Package is not yet available for pickup (must be in status 2).' });
+    }
+
+    // Proceed with update
+    await db.execute(
+      queries.counter.shipment.updateToPickedUp,
+      [guide_num]
+    );
+
+    return res.status(200).json({ message: 'Success: Package picked up.' });
+
+  } catch (err) {
+    logger.error(`Pickup error for ${req.params.guide_num}: ${err}`);
+    return res.status(500).json({ message: 'Internal server error.' });
   }
 });
 

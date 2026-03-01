@@ -24,6 +24,8 @@ impl ServerSettings {
 pub struct ServerEndpoints {
     pub login: String,
     pub received_packages: String,
+    pub pickup_package: String,
+    pub send_package: String,
 }
 
 #[derive(Deserialize, Debug, Display)]

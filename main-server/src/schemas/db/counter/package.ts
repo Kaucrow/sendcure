@@ -1,7 +1,7 @@
 import { z } from 'zod';
 
 export const receivedPackageSchema = z.object({
-  id: z.number(),
+  id: z.number().int().positive(),
   desc: z.string().nullable(),
   weight: z.string().nullable(),
   width: z.number().nullable(),

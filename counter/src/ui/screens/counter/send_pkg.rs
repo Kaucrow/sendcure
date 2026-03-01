@@ -1,6 +1,7 @@
 use crate::{
     prelude::*,
-    model::screens::{self, counter},
+    model::{Popup, screens::{self, counter}},
+    ui::popups,
 };
 
 pub fn render(
@@ -165,7 +166,8 @@ pub fn render(
         .border_style(weight_style.0);
     let weight_input = Paragraph::new(Text::from(Line::from(vec![
         Span::styled(weight_text, weight_style.1),
-        Span::styled(tab_state.inputs.get(3)?.input.value(), weight_style.0)
+        Span::styled(tab_state.inputs.get(3)?.input.value(), weight_style.0),
+        Span::styled("kg", weight_style.1),
     ])))
     .block(weight_block)
     .scroll((0, weight_scroll as u16));
@@ -182,7 +184,8 @@ pub fn render(
         .border_style(length_style.0);
     let length_input = Paragraph::new(Text::from(Line::from(vec![
         Span::styled(length_text, length_style.1),
-        Span::styled(tab_state.inputs.get(4)?.input.value(), length_style.0)
+        Span::styled(tab_state.inputs.get(4)?.input.value(), length_style.0),
+        Span::styled("cm", length_style.1),
     ])))
     .block(length_block)
     .scroll((0, length_scroll as u16));
@@ -190,7 +193,7 @@ pub fn render(
     f.render_widget(length_input, input_chunks_1[2]);
 
     // ===== Width input =====
-    
+
     let width_width = input_chunks_2[0].width;
     let width_style = get_styles(5);
     let width_text = " Width: ";
@@ -199,7 +202,8 @@ pub fn render(
         .border_style(width_style.0);
     let width_input = Paragraph::new(Text::from(Line::from(vec![
         Span::styled(width_text, width_style.1),
-        Span::styled(tab_state.inputs.get(5)?.input.value(), width_style.0)
+        Span::styled(tab_state.inputs.get(5)?.input.value(), width_style.0),
+        Span::styled("cm", width_style.1),
     ])))
     .block(width_block)
     .scroll((0, width_scroll as u16));
@@ -216,12 +220,55 @@ pub fn render(
         .border_style(height_style.0);
     let height_input = Paragraph::new(Text::from(Line::from(vec![
         Span::styled(height_text, height_style.1),
-        Span::styled(tab_state.inputs.get(6)?.input.value(), height_style.0)
+        Span::styled(tab_state.inputs.get(6)?.input.value(), height_style.0),
+        Span::styled("cm", height_style.1),
     ])))
     .block(height_block)
     .scroll((0, height_scroll as u16));
 
     f.render_widget(height_input, input_chunks_2[2]);
+
+    // ===============================
+    //  Send package button
+    // ===============================
+
+    let send_btn_area = Layout::default()
+        .direction(Direction::Horizontal)
+        .constraints([
+            Constraint::Percentage(100),
+            Constraint::Length(16),
+            Constraint::Percentage(100),
+        ])
+        .split(chunks[2])[1];
+
+    let send_btn_style = if let Some(1) = tab_state.action_sel {
+        Style::default().fg(Color::Cyan)
+    } else {
+        Style::default().fg(Color::DarkGray)
+    };
+
+    let send_btn_block = Block::default()
+        .borders(Borders::ALL)
+        .border_type(BorderType::Rounded)
+        .style(send_btn_style);
+
+    let send_btn = Paragraph::new("Send Package")
+        .alignment(Alignment::Center)
+        .block(send_btn_block);
+
+    f.render_widget(send_btn, send_btn_area);
+
+    // ===============================
+    //  Popups
+    // ===============================
+    match &tab_state.active_popup {
+        Some(Popup::PackageSent(pop_state)) => {
+            popups::counter::send_pkg::render(_app, state, pop_state, f)?;
+
+            return Ok(())
+        }
+        _ => {}
+    }
 
     // ===============================
     //  Cursor placement
@@ -253,36 +300,6 @@ pub fn render(
             f.set_cursor_position((cursor_x, cursor_y));
         }
     }
-
-    // ===============================
-    //  Send package button
-    // ===============================
-
-    let send_btn_area = Layout::default()
-        .direction(Direction::Horizontal)
-        .constraints([
-            Constraint::Percentage(100),
-            Constraint::Length(16),
-            Constraint::Percentage(100),
-        ])
-        .split(chunks[2])[1];
-
-    let send_btn_style = if let Some(1) = tab_state.action_sel {
-        Style::default().fg(Color::Cyan)
-    } else {
-        Style::default().fg(Color::DarkGray)
-    };
-
-    let send_btn_block = Block::default()
-        .borders(Borders::ALL)
-        .border_type(BorderType::Rounded)
-        .style(send_btn_style);
-
-    let send_btn = Paragraph::new("Send Package")
-        .alignment(Alignment::Center)
-        .block(send_btn_block);
-
-    f.render_widget(send_btn, send_btn_area);
 
     Ok(())
 }

@@ -38,3 +38,43 @@ counter:
       WHERE 
         s.receiver_cid = $1 
         AND s.status_id = 2
+
+  shipment:
+    getStatus: |
+      SELECT 
+        status_id
+      FROM 
+        shipment 
+      WHERE 
+        guide_num = $1
+
+    updateToPickedUp: |
+      UPDATE shipment
+      SET status_id = 3
+      WHERE guide_num = $1
+
+    create: |
+      WITH new_pkg AS (
+        INSERT INTO package (package_desc, package_weight, package_width, package_length, package_height)
+        VALUES ($1, $2, $3, $4, $5)
+        RETURNING package_id
+      )
+      INSERT INTO shipment (
+        package_id,
+        sender_cid,
+        receiver_cid,
+        destination_address,
+        status_id,
+        guide_num,
+        shipment_dt
+      )
+      VALUES (
+        (SELECT package_id FROM new_pkg),
+        $6,
+        $7,
+        $8,
+        0,
+        $9,
+        CURRENT_TIMESTAMP
+      )
+      RETURNING shipment_id, guide_num

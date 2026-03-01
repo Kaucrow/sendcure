@@ -16,9 +16,24 @@ impl InputFields {
         }
     }
 
+    pub fn with_blacklist(mut self, blacklists: Vec<(usize, InputBlacklist)>) -> Self {
+        for (idx, blacklist) in blacklists {
+            if let Some(field) = self.inputs.get_mut(idx) {
+                field.blacklist = blacklist;
+            }
+        }
+        self
+    }
+
     pub fn with_active(mut self, active: usize) -> Result<Self> {
         self.select(active)?;
         Ok(self)
+    }
+
+    pub fn clear(&mut self) {
+        for field in &mut self.inputs {
+            field.input.reset();
+        }
     }
 
     pub fn selected(&self) -> Option<&InputField> {

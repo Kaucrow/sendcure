@@ -6,6 +6,7 @@ pub struct HelpText {
 
 pub struct CommonHelpText {
     pub render_err: &'static str,
+    pub no_server_response: &'static str,
 }
 
 pub struct LoginHelpText {
@@ -15,7 +16,17 @@ pub struct LoginHelpText {
 }
 
 pub struct CounterHelpText {
+    pub start: &'static str,
+    pub select_client: &'static str,
+    pub sidebar: &'static str,
     pub recv_pkg: &'static str,
+    pub send_pkg: &'static str,
+    pub send_pkg_send: &'static str,
+
+    pub err_client_not_found: &'static str,
+    pub err_get_recv_pkg: &'static str,
+    pub err_pickup_pkg: &'static str,
+    pub err_send_pkg: &'static str,
 }
 
 impl HelpText {
@@ -23,14 +34,25 @@ impl HelpText {
         Self {
             common: CommonHelpText {
                 render_err: "The terminal is too smol :(",
+                no_server_response: "The server isn't responding",
             },
             login: LoginHelpText {
-                main: "(Tab) switch input | (Esc) back",
+                main: "(F2) switch input | (Esc) back",
                 login_failed: "Login failed.",
                 login_failed_lock: "Login failed. - Try again in: ",
             },
             counter: CounterHelpText {
-                recv_pkg: "(Tab) navigation"
+                start: "(F2) navigation | (Enter) select client",
+                select_client: "Select a client first",
+                sidebar: "↑/↓ switch tab",
+                recv_pkg: "↑/↓ select package | (Enter) mark as received",
+                send_pkg: "↑/↓ select input",
+                send_pkg_send: "↑/↓ select input | (Enter) send package",
+
+                err_client_not_found: "Failed to find client",
+                err_get_recv_pkg: "Failed to get received packages",
+                err_pickup_pkg: "Failed to mark package as picked up",
+                err_send_pkg: "Failed to send package",
             }
         }
     }

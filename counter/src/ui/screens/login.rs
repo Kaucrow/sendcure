@@ -32,28 +32,18 @@ pub fn render(app: &App, state: &screens::login::State, f: &mut Frame) -> Result
     f.render_widget(title, chunks[0]);
 
     let width = chunks[0].width.max(3) - 3;
+
     let name_scroll = state.inputs.get(0)?.input.visual_scroll(width as usize - "* C.I.: ".len());
     let password_scroll = state.inputs.get(1)?.input.visual_scroll(width as usize - "* Password: ".len());
+
     let mut name_style = Style::default();
     let mut password_style = Style::default();
 
     if let Some(field) = state.inputs.selected_idx() {
         if field == 0 {
             password_style = password_style.fg(Color::DarkGray);
-            f.set_cursor_position((chunks[1].x
-                            + ((state.inputs.get(0)?.input.visual_cursor()).max(name_scroll) - name_scroll) as u16
-                            + "* C.I.: ".len() as u16
-                            + 1,
-                            chunks[1].y + 1,
-                        ));
         } else {
             name_style = name_style.fg(Color::DarkGray);
-            f.set_cursor_position((chunks[2].x
-                            + ((state.inputs.get(1)?.input.visual_cursor()).max(password_scroll) - password_scroll) as u16
-                            + "* Password: ".len() as u16
-                            + 1,
-                        chunks[2].y + 1,
-                        ));
         }
     }
 
@@ -85,6 +75,10 @@ pub fn render(app: &App, state: &screens::login::State, f: &mut Frame) -> Result
 
     f.render_widget(input, chunks[2]);
 
+    // ===============================
+    //  Help text
+    // ===============================
+
     let help_text = {
         if state.failed_logins == 3 {
             Line::styled(format!("{}{}", HELP_TEXT.login.login_failed_lock, app.timeout.get(&TimeoutType::Login).unwrap().counter), Style::default().fg(Color::Red))
@@ -99,10 +93,38 @@ pub fn render(app: &App, state: &screens::login::State, f: &mut Frame) -> Result
     let help = Paragraph::new(help_text).block(help_block);
     f.render_widget(help, chunks[3]);
 
+    // ===============================
+    //  Popups
+    // ===============================
+
     if let Some(popup) = &state.active_popup {
         match popup {
             Popup::LoginSuccessful(pop_state) => popups::login::successful::render(app, state, pop_state, f)?,
             _ => unimplemented!()
+        }
+
+        return Ok(());
+    }
+
+    // ===============================
+    //  Cursor position
+    // ===============================
+
+    if let Some(field) = state.inputs.selected_idx() {
+        if field == 0 {
+            f.set_cursor_position((chunks[1].x
+                            + ((state.inputs.get(0)?.input.visual_cursor()).max(name_scroll) - name_scroll) as u16
+                            + "* C.I.: ".len() as u16
+                            + 1,
+                            chunks[1].y + 1,
+                        ));
+        } else {
+            f.set_cursor_position((chunks[2].x
+                            + ((state.inputs.get(1)?.input.visual_cursor()).max(password_scroll) - password_scroll) as u16
+                            + "* Password: ".len() as u16
+                            + 1,
+                        chunks[2].y + 1,
+                        ));
         }
     }
 

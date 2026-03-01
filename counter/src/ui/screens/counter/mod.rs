@@ -4,7 +4,6 @@ mod send_pkg;
 
 use crate::{
     prelude::*,
-    HELP_TEXT,
     model::screens,
     ui::centered_rect,
     model::screens::counter,
@@ -179,14 +178,11 @@ pub fn render(app: &App, state: &screens::counter::State, f: &mut Frame) -> Resu
     // ===============================
 
     let help_text = {
-        /*if state.failed_logins == 3 {
-            Line::styled(format!("{}{}", HELP_TEXT.login.login_failed_lock, app.timeout.get(&TimeoutType::Login).unwrap().counter), Style::default().fg(Color::Red))
+        if let Some(text) = state.temp_help_text.get() {
+            Line::styled(text, Style::default().fg(Color::Red))
+        } else {
+            Line::raw(&state.help_text)
         }
-        else if state.failed_logins > 0 {
-            Line::styled(HELP_TEXT.login.login_failed, Style::default().fg(Color::Red))
-        } else {*/
-            Line::raw(HELP_TEXT.counter.recv_pkg)
-        //}
     };
     let help_block = Block::default();
     let help = Paragraph::new(help_text).block(help_block);

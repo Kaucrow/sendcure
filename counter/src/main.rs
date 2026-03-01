@@ -8,11 +8,6 @@ use counter::{
 
 #[tokio::main]
 async fn main() -> Result<()> {
-    /*let pool = {
-        let args = AppArgs::parse();
-        sqlx::postgres::PgPool::connect(&args.db).await?
-    };*/
-
     let mut app = App::default();
 
     let backend = CrosstermBackend::new(std::io::stderr());
@@ -21,7 +16,7 @@ async fn main() -> Result<()> {
     let mut tui = Tui::new(terminal, event_handler);
     tui.enter()?;
 
-    tui.event_handler.tx.send(Event::EnterScreen(ScreenId::Counter))?;
+    tui.event_handler.tx.send(Event::EnterScreen(ScreenId::Login))?;
 
     while !app.should_quit {
         if let Ok(event) = tui.event_handler.next() {

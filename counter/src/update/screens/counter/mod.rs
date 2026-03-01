@@ -5,7 +5,8 @@ mod send_pkg;
 use crate::{
     prelude::*,
     settings::get_settings,
-    model::{input::*, screens::{self, counter}},
+    HELP_TEXT,
+    model::screens::{self, counter},
     update::common::{quit, input, navigate}
 };
 
@@ -16,12 +17,33 @@ pub async fn update(
     app: &mut App,
     state: &mut screens::counter::State,
     key: KeyEvent,
-    tx: &Sender<Event>
+    _tx: &Sender<Event>
 ) -> Result<()> {
     // Key inputs common to all tabs
     match key.code {
         KeyCode::Esc => quit(app)?,
-        KeyCode::Tab => navigate(&mut state.action_sel, 2)?,
+        KeyCode::F(2) => {
+            navigate(&mut state.action_sel, 2)?;
+
+            // Update help text
+            match state.action_sel {
+                Some(0) => state.help_text = HELP_TEXT.counter.start.to_string(),
+                Some(1) => state.help_text = HELP_TEXT.counter.sidebar.to_string(),
+                Some(2) => {
+                    if state.client.is_none() {
+                        state.help_text = HELP_TEXT.counter.select_client.to_string();
+                        return Ok(());
+                    }
+
+                    match state.sidebar_state.selected() {
+                        Some(0) => state.help_text = HELP_TEXT.counter.recv_pkg.to_string(),
+                        Some(1) => state.help_text = HELP_TEXT.counter.send_pkg.to_string(),
+                        _ => {}
+                    }
+                }
+                _ => {}
+            }
+        },
         _ => {}
     }
 
@@ -39,34 +61,35 @@ pub async fn update(
                         // Fetch received packages
                         let result = {
                             let url = format!("{}{}/{}", settings.server.url(), settings.server.endpoints.received_packages, ci);
-                            let response = reqwest::get(&url).await?;
-
-                            response.json::<Vec<counter::recv_pkg::Package>>().await
+                            reqwest::get(&url).await
                         };
 
                         match result {
-                            // Got packages
-                            Ok(packages) if !packages.is_empty() => {
-                                state.client = Some(ci);
+                            Ok(response) => {
+                                // Got packages
+                                if response.status().is_success() {
+                                    let packages = response.json::<Vec<counter::recv_pkg::Package>>().await?;
 
-                                let tabs = counter::Tabs::new(vec![
-                                    counter::Tab::Received(counter::recv_pkg::State {
-                                        packages,
-                                        ..Default::default()
-                                    }),
-                                    counter::Tab::Send(counter::send_pkg::State {
-                                        inputs: InputFields::new(7),
-                                        action_sel: Some(0),
-                                    })
-                                ]);
+                                    state.client = Some(ci);
 
-                                state.tabs = tabs;
-                            },
-                            // Server responded with an error
-                            _ => {
-                                //state. = Some("Client not found or no packages received".to_string());
-                                return Ok(()); 
-                            },
+                                    if let counter::Tab::Received(tab_state) = state.tabs.get_mut(0)? {
+                                        tab_state.packages = packages;
+                                    }
+
+                                    if let counter::Tab::Send(tab_state) = state.tabs.get_mut(1)? {
+                                        tab_state.inputs.clear();
+                                        tab_state.inputs.deselect();
+                                        tab_state.action_sel = Some(0);
+                                    }
+                                // Server responded with error
+                                } else {
+                                    state.temp_help_text.set(HELP_TEXT.counter.err_client_not_found, Duration::from_secs(3));
+                                }
+                            }
+                            // Server didn't respond
+                            Err(_) => {
+                                state.temp_help_text.set(HELP_TEXT.common.no_server_response, Duration::from_secs(3));
+                            }
                         }
                     }
                 }
@@ -83,10 +106,12 @@ pub async fn update(
         }
         // Main tab
         Some(2) => {
-            match state.tabs.get_mut(state.sidebar_state.selected().unwrap())? {
-                counter::Tab::Received(tab_state) => recv_pkg::update(tab_state, key.code),
-                counter::Tab::Send(tab_state) => send_pkg::update(tab_state, key)?,
-                _ => unimplemented!()
+            if let Some(client) = state.client {
+                match state.tabs.get_mut(state.sidebar_state.selected().unwrap())? {
+                    counter::Tab::Received(tab_state) => recv_pkg::update(tab_state, &mut state.temp_help_text, key.code).await?,
+                    counter::Tab::Send(tab_state) => send_pkg::update(tab_state, client, &mut state.help_text, &mut state.temp_help_text, key).await?,
+                    _ => unimplemented!()
+                }
             }
         }
         _ => {}
