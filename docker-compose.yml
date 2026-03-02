@@ -175,7 +175,9 @@ services:
       - app
   
   cli_counter:
-    build: ./counter
+    build:
+      context: ./counter
+      network: host
     command: ["counter"]
     stdin_open: true
     tty: true
