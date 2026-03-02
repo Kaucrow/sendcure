@@ -4,9 +4,9 @@ mod send_pkg;
 
 use crate::{
     prelude::*,
-    HELP_TEXT,
     model::screens,
     ui::centered_rect,
+    model::screens::counter,
 };
 
 pub fn render(app: &App, state: &screens::counter::State, f: &mut Frame) -> Result<()> {
@@ -17,7 +17,7 @@ pub fn render(app: &App, state: &screens::counter::State, f: &mut Frame) -> Resu
             Constraint::Percentage(100),
             Constraint::Length(1),
         ])
-        .split(centered_rect(&f.area(), 65, 20)?);
+        .split(centered_rect(&f.area(), 65, 22)?);
 
     let width = chunks[0].width.max(3) - 3;
 
@@ -164,13 +164,12 @@ pub fn render(app: &App, state: &screens::counter::State, f: &mut Frame) -> Resu
     let packages_inner_area = packages_block.inner(main_chunks[1]);
     f.render_widget(packages_block, main_chunks[1]);
 
-    if state.client.is_none() { 
+    if state.client.is_none() {
         no_client::render(app, state, packages_inner_area, f)?;
     } else {
-        match state.sidebar_state.selected() {
-            Some(0) => recv_pkg::render(app, state, packages_inner_area, f)?,
-            Some(1) => send_pkg::render(app, state, packages_inner_area, f)?,
-            selection => unimplemented!("Sidebar {:?} on counter", selection)
+        match state.tabs.get(state.sidebar_state.selected().unwrap())? {
+            counter::Tab::Received(tab_state) => recv_pkg::render(app, state, tab_state, packages_inner_area, f)?,
+            counter::Tab::Send(tab_state) => send_pkg::render(app, state, tab_state, packages_inner_area, f)?,
         }
     }
 
@@ -179,14 +178,11 @@ pub fn render(app: &App, state: &screens::counter::State, f: &mut Frame) -> Resu
     // ===============================
 
     let help_text = {
-        /*if state.failed_logins == 3 {
-            Line::styled(format!("{}{}", HELP_TEXT.login.login_failed_lock, app.timeout.get(&TimeoutType::Login).unwrap().counter), Style::default().fg(Color::Red))
+        if let Some(text) = state.temp_help_text.get() {
+            Line::styled(text, Style::default().fg(Color::Red))
+        } else {
+            Line::raw(&state.help_text)
         }
-        else if state.failed_logins > 0 {
-            Line::styled(HELP_TEXT.login.login_failed, Style::default().fg(Color::Red))
-        } else {*/
-            Line::raw(HELP_TEXT.counter.recv_pkg)
-        //}
     };
     let help_block = Block::default();
     let help = Paragraph::new(help_text).block(help_block);

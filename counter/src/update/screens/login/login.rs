@@ -14,14 +14,14 @@ struct LoginRequest {
 #[derive(Deserialize)]
 #[serde(rename_all = "camelCase")]
 pub struct Employee {
-    pub ci: i64,
-    pub name: String,
-    pub email: String,
-    pub phone_num: String,
-    pub role: String,
+    pub _ci: i64,
+    pub _name: String,
+    pub _email: String,
+    pub _phone_num: String,
+    pub _role: String,
 }
 
-pub async fn try_login(state: &mut screens::login::State, tx: &Sender<Event>) -> Result<()> {
+pub async fn try_login(state: &mut screens::login::State, _tx: &Sender<Event>) -> Result<()> {
     let settings = get_settings()?;
     let url = format!("{}{}", settings.server.url(), settings.server.endpoints.login);
     let client = reqwest::Client::new();
@@ -40,14 +40,13 @@ pub async fn try_login(state: &mut screens::login::State, tx: &Sender<Event>) ->
     match response.status() {
         // Login successful
         StatusCode::OK => {
-            let user_data = response.json::<Employee>().await?;
+            let _user_data = response.json::<Employee>().await?;
 
             enter_popup(state, Some(PopupId::LoginSuccessful)).await?;
         }
         // Login failed
         StatusCode::UNAUTHORIZED => {
             state.failed_logins += 1;
-            //bail!("Login failed");
         }
         // Unexpected response
         _ => {

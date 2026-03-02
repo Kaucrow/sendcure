@@ -3,7 +3,7 @@ use crate::{
     ui::*,
 };
 
-pub fn render(app: &App, f: &mut Frame) {
+pub fn render(_app: &App, f: &mut Frame) {
     let err_area = centered_rect(&f.area(), 21, 4).unwrap_or(Rect::default());
 
     let err_block = Block::default().borders(Borders::ALL).border_type(BorderType::Thick);

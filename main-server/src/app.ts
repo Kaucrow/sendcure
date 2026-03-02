@@ -8,7 +8,9 @@ import {
 } from '@routes/employee/index.js';
 
 import {
-  counterTestRoutes
+  counterTestRoutes,
+  counterRecvPkgRoutes,
+  counterSendPkgRoutes,
 } from '@routes/counter/index.js';
 
 import {
@@ -47,6 +49,8 @@ app.use('/employee', employeeLoginRoutes);
 
 // Counter routes
 app.use('/counter', counterTestRoutes);
+app.use('/counter', counterRecvPkgRoutes);
+app.use('/counter', counterSendPkgRoutes);
 
 // Shipment routes
 app.use('/shipment', shipmentGetRoutes);

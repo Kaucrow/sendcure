@@ -8,6 +8,7 @@ use crate::{
     },
 };
 
+#[allow(unreachable_patterns)]
 pub async fn enter_popup(state: &mut screens::login::State, popup: Option<PopupId>) -> Result<()> {
     match popup {
         Some(PopupId::LoginSuccessful) => {

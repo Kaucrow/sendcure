@@ -15,7 +15,7 @@ CREATE TABLE client (
 );
 
 CREATE TABLE package (
-    package_id INT PRIMARY KEY,
+    package_id SERIAL PRIMARY KEY,
     package_desc TEXT,
     package_weight DECIMAL(10, 2),
     package_width INT,

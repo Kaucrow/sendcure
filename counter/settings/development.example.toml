@@ -1,0 +1,12 @@
+debug = true
+
+[server]
+host = 'localhost'
+port = 8000
+protocol = 'http'
+
+[server.endpoints]
+login = '/employee/login'
+received_packages = '/counter/recv-pkg/received'
+pickup_package = '/counter/recv-pkg/pickup'
+send_package = '/counter/send-pkg/send'

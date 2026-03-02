@@ -1,21 +1,13 @@
 use counter::{
     prelude::*,
     event::EventHandler,
-    model::{
-        ScreenId,
-        help_text::HelpText
-    },
+    model::ScreenId,
     tui::Tui,
     update::update,
 };
 
 #[tokio::main]
 async fn main() -> Result<()> {
-    /*let pool = {
-        let args = AppArgs::parse();
-        sqlx::postgres::PgPool::connect(&args.db).await?
-    };*/
-
     let mut app = App::default();
 
     let backend = CrosstermBackend::new(std::io::stderr());

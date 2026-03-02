@@ -5,12 +5,13 @@ use crate::{
     prelude::*,
     model::{screens, Popup},
     update::{
-        common::{quit, switch_input, input},
+        common::{quit, input},
         popups,
     },
 };
 use login::try_login;
 
+#[allow(unreachable_patterns)]
 pub async fn update(
     app: &mut App,
     state: &mut screens::login::State,
@@ -34,11 +35,11 @@ pub async fn update(
     match key.code {
         KeyCode::Esc => quit(app)?,
 
-        KeyCode::F(2) => switch_input(&mut state.input_mode)?,
+        KeyCode::F(2) => state.inputs.next(),
 
         KeyCode::Enter => try_login(state, tx).await?,
 
-        _ => input(key, &state.input_mode, &mut state.inputs)?
+        _ => input(key, &mut state.inputs)?
     }
 
     Ok(())
