@@ -9,12 +9,13 @@ use crate::{
 };
 
 pub async fn update(app: &mut App, event: Event, tx: &Sender<Event>) -> Result<()> {
+    // Reset app clear screen flag
+    app.should_clear_screen = false;
+
     match event {
         // Terminal key inputs
         Event::CrosstermKey(key)
         => {
-            let App { active_screen, data, .. } = app;
-
             // Key inputs common to all screens
             match key.code {
                 KeyCode::Char('c') if key.modifiers == KeyModifiers::CONTROL => tx.send(Event::Quit)?,
@@ -22,9 +23,16 @@ pub async fn update(app: &mut App, event: Event, tx: &Sender<Event>) -> Result<(
             }
 
             // Screen-specific key inputs
-            match active_screen {
-                Screen::Login(state) => login::update(state, data, key, tx).await,
+            if let Some(mut screen) = app.active_screen.take() {
+                match &mut screen {
+                    Screen::Login(state) => login::update(app, state, key, tx).await?,
+                    Screen::Counter(state) => counter::update(app, state, key, tx).await?,
+                }
+
+                app.active_screen = Some(screen);
             }
+
+            Ok(())
         }
 
         // Enter screen
@@ -32,7 +40,7 @@ pub async fn update(app: &mut App, event: Event, tx: &Sender<Event>) -> Result<(
         => app::enter_screen(app, screen).await,
 
         Event::Quit
-        => common::quit(&mut app.data),
+        => common::quit(app),
 
         /*Event::Quit | Event::TimeoutTick(_) | Event::KeyInput(..) |
         Event::SwitchInput | Event::NextInput | Event::PrevInput |

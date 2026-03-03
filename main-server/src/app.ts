@@ -8,12 +8,10 @@ import {
 } from '@routes/employee/index.js';
 
 import {
-  counterTestRoutes
+  counterTestRoutes,
+  counterRecvPkgRoutes,
+  counterSendPkgRoutes,
 } from '@routes/counter/index.js';
-
-import {
-  shipmentGetRoutes
-} from '@routes/shipment/index.js';
 
 import { config, frontend } from '@global/constants.js';
 
@@ -47,9 +45,8 @@ app.use('/employee', employeeLoginRoutes);
 
 // Counter routes
 app.use('/counter', counterTestRoutes);
-
-// Shipment routes
-app.use('/shipment', shipmentGetRoutes);
+app.use('/counter', counterRecvPkgRoutes);
+app.use('/counter', counterSendPkgRoutes);
 
 /**
  * @swagger

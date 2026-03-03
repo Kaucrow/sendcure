@@ -5,18 +5,15 @@ use crate::{
         PopupId,
         popups,
         screens,
-        input::InputMode,
     },
 };
 
+#[allow(unreachable_patterns)]
 pub async fn enter_popup(state: &mut screens::login::State, popup: Option<PopupId>) -> Result<()> {
     match popup {
         Some(PopupId::LoginSuccessful) => {
             state.active_popup = Some(Popup::LoginSuccessful(popups::login::successful::State {}))
         },
-        Some(PopupId::ServerUnavailable) => {
-            state.active_popup = Some(Popup::ServerUnavailable(popups::login::server_unavail::State {}))
-        }
         None => {
             state.active_popup = None;
         }
