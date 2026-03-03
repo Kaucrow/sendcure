@@ -49,3 +49,23 @@ class ApiClient:
             message = "Error inesperado del servidor."
 
         raise RuntimeError(f"Error {response.status_code}: {message}")
+
+    def get_employee_questions(self) -> list[dict[str, Any]]:
+        url = f"{self.base_url}/employee/questions"
+        response = requests.get(url, timeout=self.timeout_seconds)
+
+        if response.status_code == 200:
+            data = response.json()
+
+            if isinstance(data, dict) and "data" in data:
+                payload = data["data"]
+                return payload if isinstance(payload, list) else []
+
+            return data if isinstance(data, list) else []
+
+        try:
+            message = response.json().get("message", "Error inesperado del servidor.")
+        except ValueError:
+            message = "Error inesperado del servidor."
+
+        raise RuntimeError(f"Error {response.status_code}: {message}")

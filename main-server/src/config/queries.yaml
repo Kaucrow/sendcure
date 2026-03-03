@@ -11,6 +11,11 @@ employee:
     WHERE
       employee_cid = $1
 
+  getAllQuestions: |
+    SELECT *
+    FROM question
+    ORDER BY id ASC;
+
 counter:
   testQuery: |
     SELECT 1 AS value

@@ -25,6 +25,25 @@ def _render_employee_table(ci: int, email: str, name: str, phone_num: str | None
     console.print(table)
 
 
+def _render_questions_table(questions: list[dict]) -> None:
+    if not questions:
+        console.print("\n[yellow]No hay preguntas para mostrar.[/yellow]")
+        return
+
+    ordered_columns = ["id", "name", "description"]
+    dynamic_columns = [column for column in questions[0].keys() if column not in ordered_columns]
+    columns = [column for column in ordered_columns if column in questions[0]] + dynamic_columns
+
+    table = Table(title="Tabla question", show_lines=True)
+    for column in columns:
+        table.add_column(column, style="white")
+
+    for row in questions:
+        table.add_row(*[str(row.get(column, "-")) for column in columns])
+
+    console.print(table)
+
+
 def run() -> None:
     config = get_config()
     client = ApiClient(config.api_base_url, config.api_timeout_seconds)
@@ -70,4 +89,15 @@ def run() -> None:
         role=employee.role,
     )
 
-    console.print("\n[dim]Próximo paso: mostrar tabla con query de paquetes/envíos.[/dim]")
+    console.print("\n[cyan]Cargando preguntas...[/cyan]")
+
+    try:
+        questions = client.get_employee_questions()
+    except RequestException as err:
+        console.print(f"[red]No se pudo consultar /employee/questions:[/red] {err}")
+        return
+    except Exception as err:  # noqa: BLE001
+        console.print(f"[red]Error consultando preguntas:[/red] {err}")
+        return
+
+    _render_questions_table(questions)
