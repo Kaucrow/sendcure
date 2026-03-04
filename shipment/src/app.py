@@ -12,6 +12,7 @@ class ShipmentApp(App):
 
     CSS_PATH = "../styles/app.tcss"
     TITLE = "Sendcure · shipment"
+    ENABLE_COMMAND_PALETTE = False
     SCREENS = {
         "login": LoginScreen,
         "dashboard": DashboardScreen,

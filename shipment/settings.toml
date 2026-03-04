@@ -3,6 +3,13 @@ host = "localhost"
 port = 8000
 protocol = "http"
 
+[database]
+host = "localhost"
+port = 5434
+name = "ship"
+user = "postgres"
+pass = "sasuke10"
+
 [server.endpoints]
 # Auth
 login           = "/employee/login"

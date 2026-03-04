@@ -8,10 +8,9 @@ from textual import on, work
 from src.api_client import api, ApiError
 
 
-STATUS_ON_COUNTER  = 1  
-STATUS_IN_SHIPMENT   = 2   
-STATUS_IN_TRANSIT   = 3   
-STATUS_DELIVERED     = 4   
+STATUS_ON_COUNTER = 0
+STATUS_IN_TRANSIT = 1
+STATUS_DELIVERED = 2
 
 
 class DashboardScreen(Screen):
@@ -85,15 +84,15 @@ class DashboardScreen(Screen):
             yield Label(f"shipment  ·  {name}")
         with Horizontal(id="panels"):
             with Vertical(classes="panel"):
-                yield Label("Pending to receive (from front desk)", classes="panel-title")
+                yield Label("Pending to process (from counter)", classes="panel-title")
                 yield DataTable(id="tbl-pendientes", cursor_type="row")
                 with Horizontal(classes="actions"):
-                    yield Button("Mark as received", id="btn-recibir", variant="success")
+                    yield Button("Send to transit", id="btn-recibir", variant="success")
             with Vertical(classes="panel"):
-                yield Label("In shipment — ready to send", classes="panel-title")
+                yield Label("In transit", classes="panel-title")
                 yield DataTable(id="tbl-shipment", cursor_type="row")
                 with Horizontal(classes="actions"):
-                    yield Button("Register dispatch", id="btn-shipment", variant="primary")
+                    yield Button("Mark as delivered", id="btn-shipment", variant="primary")
         yield Label("Press R to refresh  ·  Q to quit", id="status-bar")
         yield Footer()
 
@@ -113,7 +112,7 @@ class DashboardScreen(Screen):
         """Reload both tables from the API."""
         try:
             pendientes_data = api.get_shipments(status_id=STATUS_ON_COUNTER)
-            despacho_data   = api.get_shipments(status_id=STATUS_IN_SHIPMENT)
+            despacho_data = api.get_shipments(status_id=STATUS_IN_TRANSIT)
             self.app.call_from_thread(self._populate_tables, pendientes_data, despacho_data)
         except ApiError as e:
             self.app.call_from_thread(
@@ -155,7 +154,7 @@ class DashboardScreen(Screen):
     @on(Button.Pressed, "#btn-recibir")
     @work(thread=True)
     def handle_recibir(self) -> None:
-        """Mark selected shipment (from mostrador) as received in shipment."""
+        """Move selected shipment from counter to in-transit."""
         tbl = self.query_one("#tbl-pendientes", DataTable)
         if tbl.row_count == 0:
             self.app.call_from_thread(self.notify, "No pending packages.", severity="warning")
@@ -165,9 +164,9 @@ class DashboardScreen(Screen):
         shipment_id = int(row[0])
 
         try:
-            api.update_status(shipment_id, STATUS_IN_SHIPMENT)
+            api.update_status(shipment_id, STATUS_IN_TRANSIT)
             self.app.call_from_thread(
-                self.notify, f"Package #{shipment_id} marked as Received in shipment."
+                self.notify, f"Package #{shipment_id} moved to in-transit."
             )
             self.app.call_from_thread(self.action_refresh)
         except ApiError as e:

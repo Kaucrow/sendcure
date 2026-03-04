@@ -1,17 +1,16 @@
 from textual.app import ComposeResult
 from textual.screen import Screen
-from textual.widgets import Label, Button, Select, Header, LoadingIndicator
+from textual.widgets import Label, Button
 from textual.containers import Vertical, Horizontal
 from textual import on, work
 from src.api_client import api, ApiError
 
-STATUS_IN_TRANSIT = 3
+STATUS_DELIVERED = 2
 
 
 class ShipmentScreen(Screen):
     """
-    Modal for registering a package's dispatch to delivery.
-    Allows selecting a route (Delivery) and confirming the shipment.
+    Modal to confirm package arrival at destination.
     """
 
     DEFAULT_CSS = """
@@ -55,47 +54,15 @@ class ShipmentScreen(Screen):
     def __init__(self, shipment_id: int, **kwargs):
         super().__init__(**kwargs)
         self.shipment_id = shipment_id
-        self._deliveries: list[dict] = []
 
     def compose(self) -> ComposeResult:
         with Vertical(id="dialog"):
-            yield Label("Register Dispatch to Delivery", id="dialog-title")
+            yield Label("Mark Package as Delivered", id="dialog-title")
             yield Label(f"Package / Guide ID: {self.shipment_id}", id="shipment-info")
-            yield LoadingIndicator(id="loading")
-            yield Select([], id="select-delivery", prompt="Select a delivery route...")
             yield Label("", id="error-msg")
             with Horizontal(classes="actions"):
                 yield Button("Cancel", id="btn-cancel", variant="default")
-                yield Button("Confirm shipment", id="btn-confirm", variant="primary")
-
-    def on_mount(self) -> None:
-        self._load_deliveries()
-
-    @work(thread=True)
-    def _load_deliveries(self) -> None:
-        try:
-            deliveries = api.get_deliveries()
-            self.app.call_from_thread(self._populate_select, deliveries)
-        except ApiError as e:
-            self.app.call_from_thread(
-                self.query_one("#error-msg", Label).update,
-                f"Error loading routes: {e}",
-            )
-        finally:
-            self.app.call_from_thread(self.query_one("#loading", LoadingIndicator).remove)
-
-    def _populate_select(self, deliveries: list[dict]) -> None:
-        self._deliveries = deliveries
-        options = [
-            (
-                f"{d.get('deliveryName', d.get('delivery_name', ''))} "
-                f"(ID: {d.get('deliveryId', d.get('delivery_id', ''))})",
-                str(d.get("deliveryId", d.get("delivery_id", "")))
-            )
-            for d in deliveries
-        ]
-        select = self.query_one("#select-delivery", Select)
-        select.set_options(options)
+                yield Button("Confirm delivered", id="btn-confirm", variant="primary")
 
     @on(Button.Pressed, "#btn-cancel")
     def handle_cancel(self) -> None:
@@ -104,21 +71,13 @@ class ShipmentScreen(Screen):
     @on(Button.Pressed, "#btn-confirm")
     @work(thread=True)
     def handle_confirm(self) -> None:
-        select = self.query_one("#select-delivery", Select)
         error_label = self.query_one("#error-msg", Label)
 
-        if select.value is Select.BLANK:
-            self.app.call_from_thread(error_label.update, "Select a delivery route.")
-            return
-
-        delivery_id = int(select.value)
-
         try:
-            api.assign_delivery(self.shipment_id, delivery_id)
-            api.update_status(self.shipment_id, STATUS_IN_TRANSIT)
+            api.update_status(self.shipment_id, STATUS_DELIVERED)
             self.app.call_from_thread(
                 self.app.notify,
-                f"Package #{self.shipment_id} successfully dispatched.",
+                f"Package #{self.shipment_id} marked as delivered.",
             )
             self.app.call_from_thread(self.app.pop_screen)
             from src.screens.dashboard import DashboardScreen

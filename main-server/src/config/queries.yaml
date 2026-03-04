@@ -47,24 +47,7 @@ counter:
         shipment 
       WHERE 
         guide_num = $1
-
-    getTrackingByGuideNum: |
-      SELECT
-        s.guide_num,
-        s.status_id,
-        ss.status_desc,
-        s.destination_address,
-        s.shipment_dt,
-        p.package_desc
-      FROM
-        shipment s
-      JOIN
-        status_shipment ss ON ss.status_id = s.status_id
-      JOIN
-        package p ON p.package_id = s.package_id
-      WHERE
-        s.guide_num = $1
-
+    
     updateToPickedUp: |
       UPDATE shipment
       SET status_id = 3
@@ -95,3 +78,20 @@ counter:
         CURRENT_TIMESTAMP
       )
       RETURNING shipment_id, guide_num
+
+    getTrackingByGuideNum: |
+      SELECT
+        s.guide_num,
+        s.status_id,
+        ss.status_desc,
+        s.destination_address,
+        s.shipment_dt,
+        p.package_desc
+      FROM
+        shipment s
+      JOIN
+        status_shipment ss ON ss.status_id = s.status_id
+      JOIN
+        package p ON p.package_id = s.package_id
+      WHERE
+        s.guide_num = $1
