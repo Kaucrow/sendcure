@@ -117,8 +117,6 @@ services:
       - "traefik.http.routers.dashboard.entrypoints=websecure"
       - "traefik.http.routers.dashboard.tls=true"
       - "traefik.http.routers.dashboard.tls.options=modern@file"
-      - "traefik.http.services.frontend.loadbalancer.server.port=3000"
-
     ports:
       - "80:80"
       - "443:443"
@@ -136,23 +134,47 @@ services:
       POSTGRES_USER: ${POSTGRES_USER}
       POSTGRES_PASSWORD: ${POSTGRES_PASSWORD}
       POSTGRES_DB: ${POSTGRES_DB}
+    volumes:
+      - db_data:/var/lib/postgresql/data
+      - ./migrations:/docker-entrypoint-initdb.d:ro
     networks:
       - core
     restart: unless-stopped
   
   main_server:
     build: ./main-server
+    ports:
+      - "8000:8000"
+    environment:
+      DB_HOST: database
+      DB_PORT: 5432
+      DB_NAME: ${POSTGRES_DB}
+      DB_USER: ${POSTGRES_USER}
+      DB_PASS: ${POSTGRES_PASSWORD}
     volumes:
       - ./certs:/certs:ro
     networks:
+      - proxy
       - core
       - app
+    labels:
+      - "traefik.enable=true"
+      - "traefik.http.routers.backend.rule=Host(`${TRAEFIK_FRONTEND_HOST}`) && PathPrefix(`/api`)"
+      - "traefik.http.routers.backend.entrypoints=websecure"
+      - "traefik.http.routers.backend.tls=true"
+      - "traefik.http.routers.backend.tls.options=modern@file"
+      - "traefik.http.routers.backend.priority=100"
+      - "traefik.http.routers.backend.middlewares=backend-strip"
+      - "traefik.http.middlewares.backend-strip.stripprefix.prefixes=/api"
+      - "traefik.http.services.backend.loadbalancer.server.port=8000"
     depends_on:
       - openldap
       - database
   
   front:
-    image: node:22-alpine
+    build:
+      context: ./front
+      dockerfile: dockerfile
     container_name: front
     networks:
       - proxy
@@ -163,6 +185,8 @@ services:
       - "traefik.http.routers.frontend.entrypoints=websecure"
       - "traefik.http.routers.frontend.tls=true"
       - "traefik.http.routers.frontend.tls.options=modern@file"
+      - "traefik.http.routers.frontend.priority=10"
+      - "traefik.http.services.frontend.loadbalancer.server.port=80"
     depends_on:
       - main_server
   
@@ -177,7 +201,7 @@ services:
   cli_counter:
     build:
       context: ./counter
-      network: host
+      network: host #only for build stage to access main_server on localhost
     command: ["counter"]
     stdin_open: true
     tty: true
@@ -201,3 +225,6 @@ networks:
   core:
     name: core
     internal: true
+
+volumes:
+  db_data:
