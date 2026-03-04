@@ -15,6 +15,7 @@ export const queriesSchema = z.object({
     }),
     shipment: z.object({
       getStatus: z.string(),
+      getTrackingByGuideNum: z.string(),
       updateToPickedUp: z.string(),
       create: z.string(),
     })

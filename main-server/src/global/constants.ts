@@ -23,11 +23,11 @@ export const frontend = {
 };
 
 export const database = {
-  host: config.database.host,
-  port: config.database.port,
-  name: config.database.name,
-  user: config.database.user,
-  pass: config.database.pass,
+  host: process.env.DB_HOST ?? config.database.host,
+  port: process.env.DB_PORT ? Number(process.env.DB_PORT) : config.database.port,
+  name: process.env.DB_NAME ?? config.database.name,
+  user: process.env.DB_USER ?? config.database.user,
+  pass: process.env.DB_PASS ?? config.database.pass,
   url: ''
 };
 

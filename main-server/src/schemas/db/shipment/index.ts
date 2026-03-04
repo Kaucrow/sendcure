@@ -13,4 +13,14 @@ export const shipmentSchema = z.object({
     shipmentDt: z.date().optional(),
 });
 
+export const shipmentTrackingSchema = z.object({
+    guide_num: z.string(),
+    status_id: z.number().int(),
+    status_desc: z.string(),
+    destination_address: z.string(),
+    shipment_dt: z.coerce.date(),
+    package_desc: z.string().nullable(),
+});
+
 export type Shipment = z.infer<typeof shipmentSchema>;
+export type ShipmentTracking = z.infer<typeof shipmentTrackingSchema>;
