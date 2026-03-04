@@ -208,14 +208,13 @@ services:
     networks:
       - app
 
-  # cli_customerService:
-  #   image: alpine
-  #   container_name: customer_service
-  #   command: /bin/sh
-  #   stdin_open: true
-  #   tty: true
-  #   networks:
-  #     - app
+  cli_customer-service:
+    build: ./client-help
+    command: ["python", "main.py"]
+    stdin_open: true
+    tty: true
+    networks:
+      - app
 
 networks:
   proxy:
