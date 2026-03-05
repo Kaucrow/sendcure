@@ -1,7 +1,11 @@
 <script setup>
-import { ref } from 'vue';
+import { onMounted, ref } from 'vue';
 import Header from "./components/header.vue";
-import { getShipmentTracking } from './services/endpoints';
+import {
+  createSupportQuestion,
+  getAnsweredSupportQuestions,
+  getShipmentTracking
+} from './services/endpoints';
 
 import Tabs from 'primevue/tabs';
 import TabList from 'primevue/tablist';
@@ -10,11 +14,22 @@ import TabPanels from 'primevue/tabpanels';
 import TabPanel from 'primevue/tabpanel';
 import InputText from 'primevue/inputtext';
 import Button from 'primevue/button';
+import Textarea from 'primevue/textarea';
 
 const packageCode = ref('');
 const trackingData = ref(null);
 const loading = ref(false);
 const errorMessage = ref('');
+
+const supportClientCid = ref('');
+const supportQuestion = ref('');
+const supportSubmitLoading = ref(false);
+const supportSubmitMessage = ref('');
+const supportSubmitError = ref('');
+
+const answeredQuestions = ref([]);
+const answeredLoading = ref(false);
+const answeredError = ref('');
 
 async function handleTrackPackage() {
   errorMessage.value = '';
@@ -43,6 +58,52 @@ function formatDate(value) {
 
   return date.toLocaleString();
 }
+
+async function loadAnsweredQuestions() {
+  answeredError.value = '';
+  answeredLoading.value = true;
+
+  try {
+    answeredQuestions.value = await getAnsweredSupportQuestions();
+  } catch (error) {
+    answeredError.value = error?.message || 'Unable to fetch answered questions right now.';
+  } finally {
+    answeredLoading.value = false;
+  }
+}
+
+async function handleSupportSubmit() {
+  supportSubmitError.value = '';
+  supportSubmitMessage.value = '';
+
+  const normalizedCid = Number.parseInt(supportClientCid.value, 10);
+
+  if (!Number.isInteger(normalizedCid) || normalizedCid <= 0) {
+    supportSubmitError.value = 'Please enter a valid client ID.';
+    return;
+  }
+
+  if (!supportQuestion.value.trim()) {
+    supportSubmitError.value = 'Please write your question.';
+    return;
+  }
+
+  supportSubmitLoading.value = true;
+  try {
+    await createSupportQuestion(normalizedCid, supportQuestion.value);
+    supportSubmitMessage.value = 'Question sent successfully.';
+    supportQuestion.value = '';
+    await loadAnsweredQuestions();
+  } catch (error) {
+    supportSubmitError.value = error?.message || 'Unable to send question right now.';
+  } finally {
+    supportSubmitLoading.value = false;
+  }
+}
+
+onMounted(() => {
+  loadAnsweredQuestions();
+});
 
 
 </script>
@@ -86,7 +147,55 @@ function formatDate(value) {
         </div>
       </TabPanel>
       <TabPanel value="1">
-        <p>Support tickets content goes here.</p>
+        <div class="support-wrapper">
+          <div class="support-form">
+            <InputText
+              v-model="supportClientCid"
+              placeholder="Enter your client ID"
+              class="support-input"
+            />
+
+            <Textarea
+              v-model="supportQuestion"
+              rows="4"
+              placeholder="Write your support question"
+              class="support-textarea"
+            />
+
+            <div class="support-actions">
+              <Button
+                label="Send question"
+                icon="pi pi-send"
+                :loading="supportSubmitLoading"
+                @click="handleSupportSubmit"
+              />
+              <Button
+                label="Refresh answered"
+                severity="secondary"
+                icon="pi pi-refresh"
+                :loading="answeredLoading"
+                @click="loadAnsweredQuestions"
+              />
+            </div>
+
+            <p v-if="supportSubmitMessage" class="support-success">{{ supportSubmitMessage }}</p>
+            <p v-if="supportSubmitError" class="support-error">{{ supportSubmitError }}</p>
+          </div>
+
+          <div class="answered-list">
+            <h3>Answered questions</h3>
+            <p v-if="answeredError" class="support-error">{{ answeredError }}</p>
+            <p v-else-if="answeredLoading">Loading answered questions...</p>
+            <p v-else-if="!answeredQuestions.length">No answered questions yet.</p>
+            <ul v-else>
+              <li v-for="question in answeredQuestions" :key="question.questionId">
+                <p><strong>Client ID:</strong> {{ question.clientCid ?? '-' }}</p>
+                <p><strong>Question:</strong> {{ question.questionText ?? '-' }}</p>
+                <p><strong>Answer:</strong> {{ question.response ?? '-' }}</p>
+              </li>
+            </ul>
+          </div>
+        </div>
       </TabPanel>
     </TabPanels>
   </Tabs>
@@ -128,6 +237,74 @@ function formatDate(value) {
 }
 
 .tracking-result p:last-child {
+  margin-bottom: 0;
+}
+
+.support-wrapper {
+  display: flex;
+  flex-direction: column;
+  gap: 1rem;
+  max-width: 700px;
+}
+
+.support-form {
+  display: flex;
+  flex-direction: column;
+  gap: 0.75rem;
+}
+
+.support-input,
+.support-textarea {
+  width: 100%;
+}
+
+.support-actions {
+  display: flex;
+  gap: 0.75rem;
+  flex-wrap: wrap;
+}
+
+.support-success {
+  color: var(--p-green-500);
+  margin: 0;
+}
+
+.support-error {
+  color: var(--p-red-500);
+  margin: 0;
+}
+
+.answered-list {
+  border: 1px solid var(--p-surface-border);
+  border-radius: 0.5rem;
+  padding: 1rem;
+  background: var(--p-surface-card);
+}
+
+.answered-list h3 {
+  margin: 0 0 0.75rem;
+}
+
+.answered-list ul {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 0.75rem;
+}
+
+.answered-list li {
+  border: 1px solid var(--p-surface-border);
+  border-radius: 0.5rem;
+  padding: 0.75rem;
+}
+
+.answered-list li p {
+  margin: 0 0 0.4rem;
+}
+
+.answered-list li p:last-child {
   margin-bottom: 0;
 }
 
