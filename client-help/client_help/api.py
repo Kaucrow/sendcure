@@ -23,9 +23,10 @@ class ApiClient:
         payload: dict[str, Any] = {
             "ci": ci,
             "passwd": passwd,
+            "role": "customer-service",
         }
 
-        response = requests.get(url, json=payload, timeout=self.timeout_seconds)
+        response = requests.post(url, json=payload, timeout=self.timeout_seconds)
 
         if response.status_code == 200:
             data = response.json()

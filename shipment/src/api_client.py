@@ -25,9 +25,9 @@ class ApiClient:
     def login(self, ci: int, passwd: str) -> dict:
         """Login as an employee. Stores session data on success."""
         response = httpx.request(
-            "GET",
+            "POST",
             endpoint("login"),
-            json={"ci": ci, "passwd": passwd},
+            json={"ci": ci, "passwd": passwd, "role": "dispatch"},
         )
         if response.status_code == 401:
             raise ApiError(401, "ID or password incorrect.")
