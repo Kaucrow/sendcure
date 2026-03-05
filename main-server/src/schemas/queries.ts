@@ -4,6 +4,8 @@ export const queriesSchema = z.object({
   employee: z.object({
     getByCredentials: z.string(),
     getAllQuestions: z.string(),
+    getAnsweredQuestions: z.string(),
+    createQuestion: z.string(),
     updateQuestionResponse: z.string(),
   }),
 

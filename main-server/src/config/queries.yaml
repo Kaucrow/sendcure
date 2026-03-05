@@ -16,6 +16,18 @@ employee:
     FROM question
     ORDER BY question_id ASC;
 
+  getAnsweredQuestions: |
+    SELECT *
+    FROM question
+    WHERE response IS NOT NULL
+      AND TRIM(response) <> ''
+    ORDER BY question_id DESC;
+
+  createQuestion: |
+    INSERT INTO question (client_cid, question_text)
+    VALUES ($1, $2)
+    RETURNING *;
+
   updateQuestionResponse: |
     UPDATE question
     SET response = $1
