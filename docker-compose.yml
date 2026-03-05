@@ -55,10 +55,7 @@ services:
     container_name: rush-cargo
     hostname: rush-cargo
     command: ["--copy-service"]
-    ports:
-      - "636:636"
     networks:
-      - default
       - core
     environment:
       LDAP_ADMIN_PASSWORD: ${LDAP_ADMIN_PASSWORD}
@@ -143,8 +140,6 @@ services:
   
   main_server:
     build: ./main-server
-    ports:
-      - "8000:8000"
     environment:
       DB_HOST: database
       DB_PORT: 5432
