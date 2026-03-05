@@ -9,7 +9,7 @@ VALUES
 INSERT INTO status_shipment (status_id, status_desc) VALUES 
 (0, 'ON_COUNTER'),
 (1, 'ON_TRANSIT'),
-(2, 'DELIVERED');
+(2, 'DELIVERED'),
 (3, 'PICKED_UP');
 
 -- Client
@@ -18,6 +18,14 @@ INSERT INTO
 VALUES
     /* Passwd: juangarcia */
     (202020, 'juan.garcia@tiyasociados.com', 'Juan Garcia', '$argon2id$v=19$m=12,t=3,p=1$dHJ2bG95c2l4NTAwMDAwMA$Ezs9sAVZDnUGTt/1+kYzTw', '222-111-000');
+
+-- Questions
+INSERT INTO question (client_cid, question_text) VALUES
+(202020, '¿Cuál es el horario de atención en la sucursal?'),
+(202020, '¿Cuánto tarda en reflejarse un envío entregado en el sistema?'),
+(202020, '¿Qué documento necesito para retirar un paquete?'),
+(202020, '¿Puedo cambiar la dirección de entrega después del despacho?'),
+(202020, '¿Qué significa el estado ON_TRANSIT en mi guía?');
 
 -- Package
 INSERT INTO package (package_id, package_desc, package_weight, package_width, package_length, package_height) VALUES 

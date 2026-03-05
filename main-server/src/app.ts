@@ -4,7 +4,8 @@ import swaggerUI from 'swagger-ui-express';
 import { swaggerDocs, swaggerUIOptions } from './swagger.js';
 
 import {
-  loginRoutes as employeeLoginRoutes
+  loginRoutes as employeeLoginRoutes,
+  questionsRoutes as employeeQuestionsRoutes
 } from '@routes/employee/index.js';
 
 import {
@@ -41,6 +42,7 @@ app.use('/docs', swaggerUI.serve, swaggerUI.setup(swaggerDocs, swaggerUIOptions)
 
 // Employee routes
 app.use('/employee', employeeLoginRoutes);
+app.use('/employee', employeeQuestionsRoutes);
 
 // Counter routes
 app.use('/counter', counterTestRoutes);

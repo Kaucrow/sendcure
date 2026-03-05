@@ -23,6 +23,7 @@ CREATE TABLE question (
     question_id SERIAL PRIMARY KEY,
     client_cid INT,
     question_text TEXT NOT NULL,
+    response TEXT,
 
     FOREIGN KEY (client_cid) REFERENCES client(client_cid)
 );

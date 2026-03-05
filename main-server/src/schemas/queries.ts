@@ -4,6 +4,7 @@ export const queriesSchema = z.object({
   employee: z.object({
     getByCredentials: z.string(),
     getAllQuestions: z.string(),
+    updateQuestionResponse: z.string(),
   }),
 
   counter: z.object({

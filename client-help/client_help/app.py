@@ -2,6 +2,7 @@ from rich.console import Console
 from rich.panel import Panel
 from rich.prompt import IntPrompt, Prompt
 from rich.table import Table
+from rich import box
 from requests import RequestException
 
 from client_help.api import ApiClient
@@ -30,18 +31,87 @@ def _render_questions_table(questions: list[dict]) -> None:
         console.print("\n[yellow]No hay preguntas para mostrar.[/yellow]")
         return
 
-    ordered_columns = ["id", "name", "description"]
-    dynamic_columns = [column for column in questions[0].keys() if column not in ordered_columns]
-    columns = [column for column in ordered_columns if column in questions[0]] + dynamic_columns
+    table = Table(
+        title="Preguntas",
+        box=box.SIMPLE_HEAVY,
+        show_lines=False,
+        expand=False,
+        header_style="bold cyan",
+    )
 
-    table = Table(title="Tabla question", show_lines=True)
-    for column in columns:
-        table.add_column(column, style="white")
+    table.add_column("ID", justify="right", no_wrap=True, width=4)
+    table.add_column("Cliente", justify="right", no_wrap=True, width=8)
+    table.add_column("Pregunta", style="white", no_wrap=True, overflow="ellipsis", min_width=45, max_width=70)
+    table.add_column("Respuesta", style="white", no_wrap=True, overflow="ellipsis", min_width=30, max_width=55)
 
     for row in questions:
-        table.add_row(*[str(row.get(column, "-")) for column in columns])
+        question_id = row.get("questionId", "-")
+        client_cid = row.get("clientCid", "-")
+
+        question_text = row.get("questionText")
+        response_text = row.get("response")
+
+        question_value = "-" if question_text is None else str(question_text)
+        response_value = "Sin respuesta" if response_text is None else str(response_text)
+
+        question_value = question_value.replace("\n", " ").strip()
+        response_value = response_value.replace("\n", " ").strip()
+
+        if "Ã" in question_value or "Â" in question_value:
+            try:
+                question_value = question_value.encode("latin1").decode("utf-8")
+            except (UnicodeEncodeError, UnicodeDecodeError):
+                pass
+
+        if "Ã" in response_value or "Â" in response_value:
+            try:
+                response_value = response_value.encode("latin1").decode("utf-8")
+            except (UnicodeEncodeError, UnicodeDecodeError):
+                pass
+
+        table.add_row(str(question_id), str(client_cid), question_value, response_value)
 
     console.print(table)
+
+
+def _show_questions(client: ApiClient) -> None:
+    console.print("\n[cyan]Cargando preguntas...[/cyan]")
+
+    try:
+        questions = client.get_employee_questions()
+    except RequestException as err:
+        console.print(f"[red]No se pudo consultar /employee/questions:[/red] {err}")
+        return
+    except Exception as err:  # noqa: BLE001
+        console.print(f"[red]Error consultando preguntas:[/red] {err}")
+        return
+
+    _render_questions_table(questions)
+
+
+def _answer_question(client: ApiClient) -> None:
+    console.print("\n[bold]Ingresa el ID de la pregunta a responder[/bold]")
+    question_id = IntPrompt.ask("→")
+
+    console.print("\n[bold]Escribe la respuesta[/bold]")
+    response_text = Prompt.ask("→").strip()
+
+    try:
+        message = client.answer_question(question_id=question_id, response_text=response_text)
+    except ValueError as err:
+        console.print(f"[yellow]{err}[/yellow]")
+        return
+    except LookupError as err:
+        console.print(f"[yellow]{err}[/yellow]")
+        return
+    except RequestException as err:
+        console.print(f"[red]No se pudo consultar el endpoint de respuesta:[/red] {err}")
+        return
+    except Exception as err:  # noqa: BLE001
+        console.print(f"[red]Error respondiendo pregunta:[/red] {err}")
+        return
+
+    console.print(f"[green]{message}[/green]")
 
 
 def run() -> None:
@@ -80,24 +150,23 @@ def run() -> None:
         console.print(f"[red]Error:[/red] {err}")
         return
 
-    console.print("[bold green]Login exitoso.[/bold green]\n")
-    _render_employee_table(
-        ci=employee.ci,
-        email=employee.email,
-        name=employee.name,
-        phone_num=employee.phone_num,
-        role=employee.role,
-    )
+    console.print("[bold green]Sesión iniciada.[/bold green]")
 
-    console.print("\n[cyan]Cargando preguntas...[/cyan]")
+    while True:
+        console.print("\n[bold]Menú[/bold]")
+        console.print("1. Mostrar preguntas")
+        console.print("2. Responder pregunta")
+        console.print("0. Salir")
 
-    try:
-        questions = client.get_employee_questions()
-    except RequestException as err:
-        console.print(f"[red]No se pudo consultar /employee/questions:[/red] {err}")
-        return
-    except Exception as err:  # noqa: BLE001
-        console.print(f"[red]Error consultando preguntas:[/red] {err}")
-        return
+        option = Prompt.ask("Selecciona una opción", choices=["1", "2", "0"], default="1")
 
-    _render_questions_table(questions)
+        if option == "1":
+            _show_questions(client)
+            continue
+
+        if option == "2":
+            _answer_question(client)
+            continue
+
+        console.print("\n[cyan]Sesión finalizada.[/cyan]")
+        break
