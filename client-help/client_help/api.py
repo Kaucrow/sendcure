@@ -69,3 +69,28 @@ class ApiClient:
             message = "Error inesperado del servidor."
 
         raise RuntimeError(f"Error {response.status_code}: {message}")
+
+    def answer_question(self, question_id: int, response_text: str) -> str:
+        url = f"{self.base_url}/employee/questions/{question_id}/response"
+        payload: dict[str, Any] = {
+            "response": response_text,
+        }
+
+        response = requests.put(url, json=payload, timeout=self.timeout_seconds)
+
+        if response.status_code == 200:
+            data = response.json()
+            return str(data.get("message", "Pregunta respondida correctamente."))
+
+        if response.status_code == 400:
+            raise ValueError("ID de pregunta o respuesta inválida.")
+
+        if response.status_code == 404:
+            raise LookupError("No se encontró la pregunta indicada.")
+
+        try:
+            message = response.json().get("message", "Error inesperado del servidor.")
+        except ValueError:
+            message = "Error inesperado del servidor."
+
+        raise RuntimeError(f"Error {response.status_code}: {message}")

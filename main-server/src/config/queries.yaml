@@ -14,7 +14,12 @@ employee:
   getAllQuestions: |
     SELECT *
     FROM question
-    ORDER BY id ASC;
+    ORDER BY question_id ASC;
+
+  updateQuestionResponse: |
+    UPDATE question
+    SET response = $1
+    WHERE question_id = $2;
 
 counter:
   testQuery: |
