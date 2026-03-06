@@ -1,0 +1,224 @@
+services:
+  openssl:
+    image: alpine/openssl
+    container_name: certs_gen
+    entrypoint: sh
+    command:
+      - -c
+      - |
+        CERT_DIR=/certs
+        if [ ! -f $$CERT_DIR/ldap_server.key ] || [ ! -f $$CERT_DIR/ldap_server.crt ] || [ ! -f $$CERT_DIR/ldap_ca.crt ]; then
+          echo 'Generating self-signed SSL certificates for OpenLDAP...'
+
+          # CA Key and Certificate
+          openssl genrsa -out $$CERT_DIR/ldap_ca.key 2048
+          openssl req -new -x509 -key $$CERT_DIR/ldap_ca.key -out $$CERT_DIR/ldap_ca.crt -days 3650 -nodes \
+            -subj '/CN=OpenLDAP CA/O=Atlas Corp/OU=IT'
+
+          # Server Key
+          openssl genrsa -out $$CERT_DIR/ldap_server.key 2048
+
+          # Server CSR
+          openssl req -new -key $$CERT_DIR/ldap_server.key -out $$CERT_DIR/ldap_server.csr -nodes \
+            -subj '/CN=rush-cargo/O=Atlas Corp/OU=IT'
+
+          # Sign Server Certificate with CA
+          printf 'subjectAltName=DNS:rush-cargo,DNS:localhost,IP:127.0.0.1' > $$CERT_DIR/extfile.cnf
+          openssl x509 -req -in $$CERT_DIR/ldap_server.csr -CA $$CERT_DIR/ldap_ca.crt \
+            -CAkey $$CERT_DIR/ldap_ca.key -CAcreateserial -out $$CERT_DIR/ldap_server.crt -days 365 -sha256 \
+            -extfile $$CERT_DIR/extfile.cnf
+          rm -f $$CERT_DIR/extfile.cnf
+        else
+          echo 'OpenLDAP certificates already exist. Skipping generation.'
+        fi
+
+        if [ ! -f $$CERT_DIR/traefik.key ] || [ ! -f $$CERT_DIR/traefik.crt ]; then
+          echo 'Generating SSL certificates for Traefik...'
+          openssl genrsa -out $$CERT_DIR/traefik.key 2048
+          openssl req -new -key $$CERT_DIR/traefik.key -out $$CERT_DIR/traefik.csr -nodes \
+            -subj '/CN=localhost/O=Atlas Corp/OU=IT'
+            
+          printf 'subjectAltName=DNS:localhost,IP:127.0.0.1' > $$CERT_DIR/extfile_traefik.cnf
+          openssl x509 -req -in $$CERT_DIR/traefik.csr -CA $$CERT_DIR/ldap_ca.crt \
+            -CAkey $$CERT_DIR/ldap_ca.key -CAcreateserial -out $$CERT_DIR/traefik.crt -days 365 -sha256 \
+            -extfile $$CERT_DIR/extfile_traefik.cnf
+          rm -f $$CERT_DIR/extfile_traefik.cnf
+        else
+          echo 'Traefik certificates already exist. Skipping generation.'
+        fi 
+    volumes:
+      - ./certs:/certs
+    
+  
+  openldap:
+    image: osixia/openldap:1.5.0
+    container_name: rush-cargo
+    hostname: rush-cargo
+    command: ["--copy-service"]
+    networks:
+      - core
+    environment:
+      LDAP_ADMIN_PASSWORD: ${LDAP_ADMIN_PASSWORD}
+      LDAP_DOMAIN: atlas.com
+      LDAP_BASE_DN: dc=atlas,dc=com
+      LDAP_TLS: "true"
+      LDAP_TLS_CRT_FILENAME: ldap_server.crt
+      LDAP_TLS_KEY_FILENAME: ldap_server.key
+      LDAP_TLS_CA_CRT_FILENAME: ldap_ca.crt
+      LDAP_TLS_VERIFY_CLIENT: "allow"
+      LDAP_SKIP_DEFAULT_BOOTSTRAP: "true"
+    volumes:
+      - ./certs:/container/service/slapd/assets/certs
+      - ./custom_ldif:/container/service/slapd/assets/config/bootstrap/ldif/custom:ro
+      - ./ldap_data:/var/lib/ldap
+      - ./ldap_config:/etc/ldap/slapd.d
+    restart: unless-stopped
+    healthcheck:
+      test: ["CMD", "ldapsearch", "-x", "-H", "ldap://localhost", "-b", "dc=atlas,dc=com", "-D", "cn=admin,dc=atlas,dc=com", "-w", "${LDAP_ADMIN_PASSWORD}"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+    depends_on:
+      openssl:
+        condition: service_completed_successfully
+
+  traefik:
+    image: traefik:v3.6
+    networks:
+      - proxy
+    command:
+      - "--entrypoints.web.address=:80"
+      - "--entrypoints.web.http.redirections.entrypoint.to=websecure"
+      - "--entrypoints.web.http.redirections.entrypoint.scheme=https"
+      - "--entrypoints.web.http.redirections.entrypoint.permanent=true"
+      - "--entrypoints.websecure.address=:443"
+      - "--entrypoints.websecure.http.tls=true"
+    
+      - "--providers.file.filename=/traefik-dynamic.yml"
+      
+      - "--providers.docker=true"
+      - "--providers.docker.exposedbydefault=false"
+      - "--providers.docker.network=proxy"
+
+      - "--api.dashboard=true"
+      - "--api.insecure=false"
+
+      - "--log.level=INFO"
+      - "--accesslog=true"
+      - "--metrics.prometheus=true"
+    
+    labels:
+      - "traefik.enable=true"
+      - "traefik.http.routers.dashboard.rule=Host(`dashboard.docker.localhost`)"
+      - "traefik.http.routers.dashboard.service=api@internal"
+      - "traefik.http.routers.dashboard.entrypoints=websecure"
+      - "traefik.http.routers.dashboard.tls=true"
+      - "traefik.http.routers.dashboard.tls.options=modern@file"
+    ports:
+      - "80:80"
+      - "443:443"
+    volumes:
+      - "/var/run/docker.sock:/var/run/docker.sock:ro"
+      - "./traefik-dynamic.yml:/traefik-dynamic.yml:ro"
+      - "./certs:/certs:ro"
+    depends_on:
+      - openssl
+  
+  database:
+    image: postgres:15-alpine
+    container_name: db
+    environment:
+      POSTGRES_USER: ${POSTGRES_USER}
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD}
+      POSTGRES_DB: ${POSTGRES_DB}
+    volumes:
+      - db_data:/var/lib/postgresql/data
+      - ./migrations:/docker-entrypoint-initdb.d:ro
+    networks:
+      - core
+    restart: unless-stopped
+  
+  main_server:
+    build: ./main-server
+    environment:
+      DB_HOST: database
+      DB_PORT: 5432
+      DB_NAME: ${POSTGRES_DB}
+      DB_USER: ${POSTGRES_USER}
+      DB_PASS: ${POSTGRES_PASSWORD}
+    volumes:
+      - ./certs:/certs:ro
+    networks:
+      - proxy
+      - core
+      - app
+    labels:
+      - "traefik.enable=true"
+      - "traefik.http.routers.backend.rule=Host(`${TRAEFIK_FRONTEND_HOST}`) && PathPrefix(`/api`)"
+      - "traefik.http.routers.backend.entrypoints=websecure"
+      - "traefik.http.routers.backend.tls=true"
+      - "traefik.http.routers.backend.tls.options=modern@file"
+      - "traefik.http.routers.backend.priority=100"
+      - "traefik.http.routers.backend.middlewares=backend-strip"
+      - "traefik.http.middlewares.backend-strip.stripprefix.prefixes=/api"
+      - "traefik.http.services.backend.loadbalancer.server.port=8000"
+    depends_on:
+      - openldap
+      - database
+  
+  front:
+    build:
+      context: ./front
+      dockerfile: dockerfile
+    container_name: front
+    networks:
+      - proxy
+      - app
+    labels:
+      - "traefik.enable=true"
+      - "traefik.http.routers.frontend.rule=Host(`${TRAEFIK_FRONTEND_HOST}`)"
+      - "traefik.http.routers.frontend.entrypoints=websecure"
+      - "traefik.http.routers.frontend.tls=true"
+      - "traefik.http.routers.frontend.tls.options=modern@file"
+      - "traefik.http.routers.frontend.priority=10"
+      - "traefik.http.services.frontend.loadbalancer.server.port=80"
+    depends_on:
+      - main_server
+  
+  cli_dispatch:
+    build: ./shipment
+    command: ["python", "main.py"]
+    stdin_open: true
+    tty: true
+    networks:
+      - app
+  
+  cli_counter:
+    build:
+      context: ./counter
+      network: host #only for build stage to access main_server on localhost
+    command: ["counter"]
+    stdin_open: true
+    tty: true
+    networks:
+      - app
+
+  cli_customer-service:
+    build: ./client-help
+    command: ["python", "main.py"]
+    stdin_open: true
+    tty: true
+    networks:
+      - app
+
+networks:
+  proxy:
+    name: proxy
+  app:
+    name: app
+  core:
+    name: core
+    internal: true
+
+volumes:
+  db_data:

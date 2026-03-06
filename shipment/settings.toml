@@ -1,0 +1,23 @@
+[server]
+host = "localhost"
+port = 8000
+protocol = "http"
+
+[database]
+host = "localhost"
+port = 5434
+name = "ship"
+user = "postgres"
+pass = "sasuke10"
+
+[server.endpoints]
+# Auth
+login           = "/employee/login"
+# Shipments
+shipments       = "/shipment"
+shipment_by_id  = "/shipment/{id}"
+update_status   = "/shipment/{id}/status"
+assign_delivery = "/shipment/{id}/delivery"
+# Deliveries & vehicles
+deliveries      = "/delivery"
+vehicles        = "/vehicle"

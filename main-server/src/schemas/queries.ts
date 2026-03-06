@@ -3,6 +3,10 @@ import { z } from 'zod';
 export const queriesSchema = z.object({
   employee: z.object({
     getByCredentials: z.string(),
+    getAllQuestions: z.string(),
+    getAnsweredQuestions: z.string(),
+    createQuestion: z.string(),
+    updateQuestionResponse: z.string(),
   }),
 
   counter: z.object({
@@ -15,6 +19,7 @@ export const queriesSchema = z.object({
     }),
     shipment: z.object({
       getStatus: z.string(),
+      getTrackingByGuideNum: z.string(),
       updateToPickedUp: z.string(),
       create: z.string(),
     })

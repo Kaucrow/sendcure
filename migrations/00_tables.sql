@@ -14,6 +14,20 @@ CREATE TABLE client (
     phone_num VARCHAR(20)
 );
 
+CREATE TABLE status_question (
+    status_id SERIAL PRIMARY KEY,
+    status_desc VARCHAR(100)
+);
+
+CREATE TABLE question (
+    question_id SERIAL PRIMARY KEY,
+    client_cid INT,
+    question_text TEXT NOT NULL,
+    response TEXT,
+
+    FOREIGN KEY (client_cid) REFERENCES client(client_cid)
+);
+
 CREATE TABLE package (
     package_id SERIAL PRIMARY KEY,
     package_desc TEXT,

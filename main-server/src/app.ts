@@ -4,7 +4,8 @@ import swaggerUI from 'swagger-ui-express';
 import { swaggerDocs, swaggerUIOptions } from './swagger.js';
 
 import {
-  loginRoutes as employeeLoginRoutes
+  loginRoutes as employeeLoginRoutes,
+  questionsRoutes as employeeQuestionsRoutes
 } from '@routes/employee/index.js';
 
 import {
@@ -12,6 +13,10 @@ import {
   counterRecvPkgRoutes,
   counterSendPkgRoutes,
 } from '@routes/counter/index.js';
+
+import {
+  shipmentGetRoutes
+} from '@routes/shipment/index.js';
 
 import { config, frontend } from '@global/constants.js';
 
@@ -42,11 +47,15 @@ app.use('/docs', swaggerUI.serve, swaggerUI.setup(swaggerDocs, swaggerUIOptions)
 
 // Employee routes
 app.use('/employee', employeeLoginRoutes);
+app.use('/employee', employeeQuestionsRoutes);
 
 // Counter routes
 app.use('/counter', counterTestRoutes);
 app.use('/counter', counterRecvPkgRoutes);
 app.use('/counter', counterSendPkgRoutes);
+
+// Shipment routes
+app.use('/shipment', shipmentGetRoutes);
 
 /**
  * @swagger

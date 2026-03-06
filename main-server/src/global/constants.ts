@@ -23,14 +23,25 @@ export const frontend = {
 };
 
 export const database = {
-  host: config.database.host,
-  port: config.database.port,
-  name: config.database.name,
-  user: config.database.user,
-  pass: config.database.pass,
+  host: process.env.DB_HOST ?? config.database.host,
+  port: process.env.DB_PORT ? Number(process.env.DB_PORT) : config.database.port,
+  name: process.env.DB_NAME ?? config.database.name,
+  user: process.env.DB_USER ?? config.database.user,
+  pass: process.env.DB_PASS ?? config.database.pass,
   url: ''
 };
 
 export const queries = queriesSchema.parse(
   yaml.parse(fs.readFileSync('./src/config/queries.yaml', 'utf-8'))
 );
+
+export const ldap = {
+  url: config.ldap.url,
+  baseDn: config.ldap.baseDn,
+  bindDn: config.ldap.bindDn,
+  bindPassword: config.ldap.bindPassword,
+  userFilter: config.ldap.userFilter,
+  groupBaseDn: config.ldap.groupBaseDn,
+  caPath: config.ldap.caPath,
+  tlsRejectUnauthorized: config.ldap.tlsRejectUnauthorized,
+};

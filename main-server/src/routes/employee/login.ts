@@ -1,15 +1,23 @@
 import { Router } from 'express';
-import argon2 from 'argon2';
-import { queries } from '@global/constants.js';
-import { employeeSchema, publicEmployeeSchema } from '@schemas/db/people/index.js';
-import { db, logger } from '@components/index.js';
+import { publicEmployeeSchema } from '@schemas/db/people/index.js';
+import { logger } from '@components/index.js';
+import { ldap } from '@components/ldap.js';
 
 const router = Router();
+const ROLE_GROUPS = new Set(['counter', 'dispatch', 'customer-service', 'admins']);
+
+const asString = (value: unknown): string => {
+  if (Array.isArray(value)) {
+    const first = value[0];
+    return first == null ? '' : String(first);
+  }
+  return value == null ? '' : String(value);
+};
 
 /**
  * @swagger
  * /employee/login:
- *  get:
+ *  post:
  *    tags:
  *      - auth 
  *    description: Login endpoint.
@@ -36,7 +44,7 @@ const router = Router();
  *      401:
  *        description: Invalid credentials.
  */
-router.get('/login', async (req, res) => {
+router.post('/login', async (req, res) => {
   try {
     const { ci, passwd } = req.body;
 
@@ -46,24 +54,35 @@ router.get('/login', async (req, res) => {
       return res.status(400).json({ message: 'CI and password are required.' });
     }
 
-    const employee = await db.fetchOne(
-      queries.employee.getByCredentials,
-      employeeSchema,
-      [ci],
-    );
+    const requestedRole = asString(req.body?.role ?? req.query?.role ?? 'counter').toLowerCase();
+    if (!ROLE_GROUPS.has(requestedRole)) {
+      return res.status(400).json({ message: 'Invalid requested role.' });
+    }
 
-    if (!employee || !argon2.verify(employee.passwd, passwd)) {
+    const ldapUser = await ldap.authenticate({ 
+      uid: String(ci),
+      password: passwd
+    });
+    if (!ldapUser) {
       return res.status(401).json({ message: 'Invalid CI or password.' });
     }
 
-    const role = 'counter';
+    const role = asString(ldapUser.role).toLowerCase();
+    if (!role) {
+      return res.status(403).json({ message: 'User has no assigned role.' });
+    }
+    if (role !== requestedRole) {
+      return res.status(403).json({ message: `User is not authorized for role: ${requestedRole}.` });
+    }
 
-    const employeeWithRole = {
-      ...employee,
-      role,
-    };
 
-    const safeEmployee = publicEmployeeSchema.parse(employeeWithRole);
+    const safeEmployee = publicEmployeeSchema.parse({
+      ci: Number(asString(ldapUser.uidNumber) || ci),
+      email: asString(ldapUser.mail),
+      name: asString(ldapUser.cn),
+      phoneNum: asString(ldapUser.telephoneNumber),
+      role
+    });
 
     return res.status(200).json(safeEmployee);
 
